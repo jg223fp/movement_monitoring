@@ -56,9 +56,13 @@ void led_task(void *pvParameters) {
     }
     printf("initialised\n");
 
+    sleep_ms(100);
+
     cyw43_arch_enable_sta_mode();
 
-    if (cyw43_arch_wifi_connect_timeout_ms(ssid, pass, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
+    sleep_ms(100);
+
+    if (cyw43_arch_wifi_connect_timeout_ms(ssid, pass, CYW43_AUTH_WPA2_AES_PSK, 15000)) {
         printf("failed to connect\n");
         return 1;
     }
