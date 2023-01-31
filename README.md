@@ -2,9 +2,9 @@
 The idea for this project is to use an 8x8 IR thermal sensor for detection of people. The sensor has pixels just like a camera, but the 64 pixels are temperatures instead of colours. This hopefully gives the ability to calculate the direction of a humans movements and can there by keep track of how many enters and how many leaves a room with just one sensor and without using a camera.
 
 ## Requirements
-- Detect the presence of a source of heat(human).
+- Detect the presence of a heatsource(human).
 - Detect the presence of a wireless device.
-- Detect in what direction a source of heat(human) is moving.
+- Detect in what direction a heatsource(human) is moving.
 - Send information to the cloud.
 - Use a RTOS.
 
@@ -25,7 +25,7 @@ The idea for this project is to use an 8x8 IR thermal sensor for detection of pe
 - Adafruit AMG8833 thermal sensor
 - Coloured LED
 - Resitor 220 ohm
-- Batterypack
+- Batterypack (Current battery is 1000 Mah)
 
 <br><br>
 
