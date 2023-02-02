@@ -20,22 +20,23 @@ void blink(void *param) {
   }
 }
 
-void amgInit() {
+void amg_init() {
     Serial.println("Initiating AMG8833");
-
     bool status;
-    
     status = amg.begin();
     if (!status) {
         Serial.println("Could not find a valid AMG88xx sensor, check wiring!");
         while (1);
     }
-    delay(100); // let sensor boot up
+    delay(1000); // let sensor boot up
 }
 
-void amgRead(void *param) {
+void amg_read(void *param) {
   (void) param;
-  //read all the pixels
+  amg_init();
+  
+  while(true) {
+    //read all the pixels
     amg.readPixels(pixels);
 
     Serial.print("[");
@@ -47,38 +48,29 @@ void amgRead(void *param) {
     Serial.println("]");
     Serial.println();
 
-    //delay a second
-    delay(1000);
+    delay(1);
+  }
 }
-
-
-
-
 
 
 
 // Running on core0
 void setup() {
   Serial.begin(115200);
-  amgInit();
+  delay(100);
   xTaskCreate(blink, "BLINK", 128, nullptr, 1, nullptr);
-  xTaskCreate(amgRead, "TempRead", 128, nullptr, 2, nullptr);
-  delay(5000);
+  xTaskCreate(amg_read, "TempRead", 1024, nullptr, 7, nullptr);
 }
 
 void loop() {
-  Serial.printf("C0\n");
-  delay(1000);
 }
 
 
 // Running on core1
-void setup1() {
-  delay(5000);
-  Serial.printf("C1: Red leader standing by...\n");
-}
+//void setup1() {
+  //xTaskCreate(amg_read, "TempRead", 1024, nullptr, 7, nullptr);
+//  delay(1000);
+//}
 
-void loop1() {
-  Serial.printf("C1\n");
-  delay(2000);
-}
+//void loop1() {
+//}
