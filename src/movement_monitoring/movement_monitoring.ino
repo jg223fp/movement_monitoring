@@ -32,6 +32,7 @@ void amg_read(void *param) {
     //read all the pixels
     amg.readPixels(pixels);
 
+  /*
     Serial.print("[");
     for(int i=1; i<=AMG88xx_PIXEL_ARRAY_SIZE; i++){
       Serial.print(pixels[i-1]);
@@ -40,6 +41,15 @@ void amg_read(void *param) {
     }
     Serial.println("]");
     Serial.println();
+  */
+
+    // Calculate the average temp of the sensor
+    long sum = 0;
+    for (int i = 0; i < AMG88xx_PIXEL_ARRAY_SIZE; i++) {     
+       sum = sum + pixels[i];    
+    }
+    long avg = sum/AMG88xx_PIXEL_ARRAY_SIZE;
+    Serial.printf("Avergae temp: %ld \n",avg);
 
     delay(1);
   }
