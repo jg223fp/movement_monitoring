@@ -7,6 +7,14 @@
 // ##############  Global variables  ##############
 Adafruit_AMG88xx amg;
 float pixels[AMG88xx_PIXEL_ARRAY_SIZE];
+int row1[8];  // Bottom of sensor (ey towards face and text is readable)
+int row2[8];   
+int row3[8];
+int row4[8];
+int row5[8];
+int row6[8];
+int row7[8];
+int row8[8]; // Top of sensor
 
 
 // ################  Tasks  ########################
@@ -31,7 +39,6 @@ void amg_read(void *param) {
   while(true) {
     //read all the pixels
     amg.readPixels(pixels);
-
   /*
     Serial.print("[");
     for(int i=1; i<=AMG88xx_PIXEL_ARRAY_SIZE; i++){
@@ -42,7 +49,30 @@ void amg_read(void *param) {
     Serial.println("]");
     Serial.println();
   */
+  for (int i = 0; i < 8; i++) {
+    int index = i * 8;
+    row1[i] = pixels[index];
+    index++;
+    row2[i] = pixels[index];
+    index++;
+    row3[i] = pixels[index];
+    index++;
+    row4[i] = pixels[index];
+    index++;
+    row5[i] = pixels[index];
+    index++;
+    row6[i] = pixels[index];
+    index++;
+    row7[i] = pixels[index];
+    index++;
+    row8[i] = pixels[index];
 
+    Serial.print(row8[i]);   // print top row
+    Serial.print(" ");
+  }
+  Serial.println();
+
+  /*
     // Calculate the average temp of the sensor
     long sum = 0;
     for (int i = 0; i < AMG88xx_PIXEL_ARRAY_SIZE; i++) {     
@@ -50,7 +80,7 @@ void amg_read(void *param) {
     }
     long avg = sum/AMG88xx_PIXEL_ARRAY_SIZE;
     Serial.printf("Avergae temp: %ld \n",avg);
-
+*/
     delay(1);
   }
 }
