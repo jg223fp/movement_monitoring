@@ -87,42 +87,42 @@ void amg_read(void *param) {
 
 
 
-  if(row1_avg > old_row1_avg) {
+  if(row1_avg - old_row1_avg > 1) {
     Serial.print("O ");
   } else {
     Serial.print("  ");
   }
-  if(row2_avg > old_row2_avg) {
+  if(row2_avg - old_row2_avg > 1) {
     Serial.print("O ");
   } else {
     Serial.print("  ");
   }
-  if(row3_avg > old_row3_avg) {
+  if(row3_avg - old_row3_avg > 1) {
     Serial.print("O ");
   } else {
     Serial.print("  ");
   }
-  if(row4_avg > old_row4_avg) {
+  if(row4_avg - old_row4_avg > 1) {
     Serial.print("O ");
   } else {
     Serial.print("  ");
   }
-  if(row5_avg > old_row5_avg) {
+  if(row5_avg - old_row5_avg > 1) {
     Serial.print("O ");
   } else {
     Serial.print("  ");
   }
-  if(row6_avg > old_row6_avg) {
+  if(row6_avg - old_row6_avg > 1) {
     Serial.print("O ");
   } else {
     Serial.print("  ");
   }
-  if(row7_avg > old_row7_avg) {
+  if(row7_avg - old_row7_avg > 1) {
     Serial.print("O ");
   } else {
     Serial.print("  ");
   }
-  if(row8_avg > old_row8_avg) {
+  if(row8_avg - old_row8_avg > 1) {
     Serial.print("O ");
   } else {
     Serial.print("  ");
