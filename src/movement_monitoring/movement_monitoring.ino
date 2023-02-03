@@ -15,6 +15,7 @@ int row5[8];
 int row6[8];
 int row7[8];
 int row8[8]; // Top of sensor
+int average_temp;
 
 
 // ################  Tasks  ########################
@@ -49,6 +50,7 @@ void amg_read(void *param) {
     Serial.println("]");
     Serial.println();
   */
+
   for (int i = 0; i < 8; i++) {
     int index = i * 8;
     row1[i] = pixels[index];
@@ -67,21 +69,28 @@ void amg_read(void *param) {
     index++;
     row8[i] = pixels[index];
 
-    Serial.print(row8[i]);   // print top row
-    Serial.print(" ");
+   // Serial.print(row8[i]);   // print top row
+    //Serial.print(" ");
   }
-  Serial.println();
+  //Serial.println();
 
-  /*
-    // Calculate the average temp of the sensor
-    long sum = 0;
+  //Gör så att kalkyleringen av average är en task som händer  typ en gång i minuten
+  // kolla sedan rad för rad på sensorn vad som händer. Jämför mit average
+  delay(1);
+  }
+}
+
+// Calculate the average temp of all pixels of AMG8833 sensor
+void amg_avg_temp(void *param) {
+  (void) param;
+  while(true) {
+    int sum = 0;
     for (int i = 0; i < AMG88xx_PIXEL_ARRAY_SIZE; i++) {     
        sum = sum + pixels[i];    
-    }
-    long avg = sum/AMG88xx_PIXEL_ARRAY_SIZE;
-    Serial.printf("Avergae temp: %ld \n",avg);
-*/
-    delay(1);
+  }
+  average_temp = sum/AMG88xx_PIXEL_ARRAY_SIZE;
+  delay(10000);
+  Serial.println(average_temp);
   }
 }
 
@@ -108,6 +117,8 @@ void setup() {
   delay(100);
   xTaskCreate(blink, "BLINK", 128, nullptr, 6, nullptr);
   xTaskCreate(amg_read, "TempRead", 1024, nullptr, 7, nullptr);
+  delay(100);
+  xTaskCreate(amg_avg_temp, "avgTempCalc", 256, nullptr, 5, nullptr);
 }
 
 void loop() {
