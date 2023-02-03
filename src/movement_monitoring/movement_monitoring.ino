@@ -16,6 +16,8 @@ int row6[8];
 int row7[8];
 int row8[8]; // Top of sensor
 int average_temp;
+int left_to_right = 0;
+int right_to_left = 0;
 
 
 // ################  Tasks  ########################
@@ -35,7 +37,6 @@ void blink(void *param) {
 // Reads all the pixels on the AMG8833 and prints the values in the serial communication.
 void amg_read(void *param) {
   (void) param;
-  amg_init();
   
   while(true) {
     //read all the pixels
@@ -80,11 +81,56 @@ void amg_read(void *param) {
   int row8_avg = get_row_average(row8);
 
 
+  if(row1_avg > average_temp) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row2_avg > average_temp) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row3_avg > average_temp) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row4_avg > average_temp) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row5_avg > average_temp) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row6_avg > average_temp) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row7_avg > average_temp) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row8_avg > average_temp) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  Serial.print(" ");
+  Serial.print(average_temp);
+  Serial.println();
+  
+
   delay(1);
   }
 }
 
-// Calculate the average temp of all pixels of AMG8833 sensor
+// Calculate the average temp of all pixels of AMG8833 sensor every XX second
 void amg_avg_temp(void *param) {
   (void) param;
   while(true) {
@@ -93,7 +139,7 @@ void amg_avg_temp(void *param) {
        sum = sum + pixels[i];    
   }
   average_temp = sum/AMG88xx_PIXEL_ARRAY_SIZE;
-  delay(10000);
+  delay(10000); // Set how often the average should be calculated here.
   }
 }
 
@@ -110,6 +156,7 @@ void amg_init() {
         while (1);
     }
     delay(1000); // let sensor boot up
+    amg.readPixels(pixels);
 }
 
 // Calculate the varegare of an array with 8 values
@@ -118,8 +165,8 @@ int get_row_average(int arr[8]) {
     for (int i = 0; i < 8; i++) {     
        sum = sum + arr[i];    
   }
-  average_temp = sum/8;
-  return average_temp;
+  int avg = sum/8;
+  return avg;
 }
 
 
@@ -128,10 +175,13 @@ int get_row_average(int arr[8]) {
 void setup() {
   Serial.begin(115200);
   delay(100);
+  amg_init();
+  xTaskCreate(amg_avg_temp, "avgTempCalc", 256, nullptr, 5, nullptr);
+  delay(100);
   xTaskCreate(blink, "BLINK", 128, nullptr, 6, nullptr);
   xTaskCreate(amg_read, "TempRead", 1024, nullptr, 7, nullptr);
   delay(100);
-  xTaskCreate(amg_avg_temp, "avgTempCalc", 256, nullptr, 5, nullptr);
+ 
 }
 
 void loop() {
