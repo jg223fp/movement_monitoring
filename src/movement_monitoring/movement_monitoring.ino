@@ -7,7 +7,7 @@
 // ##############  Global variables  ##############
 Adafruit_AMG88xx amg;
 float pixels[AMG88xx_PIXEL_ARRAY_SIZE];
-int row1[8];  // Bottom of sensor (ey towards face and text is readable)
+int row1[8];  // Bottom of sensor (eye towards face and text is readable)
 int row2[8];   
 int row3[8];
 int row4[8];
@@ -15,6 +15,8 @@ int row5[8];
 int row6[8];
 int row7[8];
 int row8[8]; // Top of sensor
+int old_row1_avg, old_row2_avg, old_row3_avg, old_row4_avg = 0;
+int old_row5_avg, old_row6_avg, old_row7_avg, old_row8_avg = 0;
 int average_temp;
 int left_to_right = 0;
 int right_to_left = 0;
@@ -80,52 +82,53 @@ void amg_read(void *param) {
   int row7_avg = get_row_average(row7);
   int row8_avg = get_row_average(row8);
 
-
-  if(row1_avg > average_temp) {
-    Serial.print("O ");
-  } else {
-    Serial.print("  ");
-  }
-  if(row2_avg > average_temp) {
-    Serial.print("O ");
-  } else {
-    Serial.print("  ");
-  }
-  if(row3_avg > average_temp) {
-    Serial.print("O ");
-  } else {
-    Serial.print("  ");
-  }
-  if(row4_avg > average_temp) {
-    Serial.print("O ");
-  } else {
-    Serial.print("  ");
-  }
-  if(row5_avg > average_temp) {
-    Serial.print("O ");
-  } else {
-    Serial.print("  ");
-  }
-  if(row6_avg > average_temp) {
-    Serial.print("O ");
-  } else {
-    Serial.print("  ");
-  }
-  if(row7_avg > average_temp) {
-    Serial.print("O ");
-  } else {
-    Serial.print("  ");
-  }
-  if(row8_avg > average_temp) {
-    Serial.print("O ");
-  } else {
-    Serial.print("  ");
-  }
-  Serial.print(" ");
-  Serial.print(average_temp);
-  Serial.println();
+  //if sasts from hell should be here somwhere
   
 
+
+
+  if(row1_avg > old_row1_avg) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row2_avg > old_row2_avg) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row3_avg > old_row3_avg) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row4_avg > old_row4_avg) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row5_avg > old_row5_avg) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row6_avg > old_row6_avg) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row7_avg > old_row7_avg) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  if(row8_avg > old_row8_avg) {
+    Serial.print("O ");
+  } else {
+    Serial.print("  ");
+  }
+  Serial.println();
+  
   delay(1);
   }
 }
@@ -134,11 +137,14 @@ void amg_read(void *param) {
 void amg_avg_temp(void *param) {
   (void) param;
   while(true) {
-    int sum = 0;
-    for (int i = 0; i < AMG88xx_PIXEL_ARRAY_SIZE; i++) {     
-       sum = sum + pixels[i];    
-  }
-  average_temp = sum/AMG88xx_PIXEL_ARRAY_SIZE;
+    old_row1_avg = get_row_average(row1);
+    old_row2_avg = get_row_average(row2);
+    old_row3_avg = get_row_average(row3);
+    old_row4_avg = get_row_average(row4);
+    old_row5_avg = get_row_average(row5);
+    old_row6_avg = get_row_average(row6);
+    old_row7_avg = get_row_average(row7);
+    old_row8_avg = get_row_average(row8);
   delay(10000); // Set how often the average should be calculated here.
   }
 }
@@ -180,8 +186,6 @@ void setup() {
   delay(100);
   xTaskCreate(blink, "BLINK", 128, nullptr, 6, nullptr);
   xTaskCreate(amg_read, "TempRead", 1024, nullptr, 7, nullptr);
-  delay(100);
- 
 }
 
 void loop() {
