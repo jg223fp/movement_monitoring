@@ -68,13 +68,17 @@ void amg_read(void *param) {
     row7[i] = pixels[index];
     index++;
     row8[i] = pixels[index];
-
-   // Serial.print(row8[i]);   // print top row
-    //Serial.print(" ");
   }
-  //Serial.println();
-  int test = get_row_average(row8); 
-  Serial.println(test);
+
+  int row1_avg = get_row_average(row1);
+  int row2_avg = get_row_average(row2);
+  int row3_avg = get_row_average(row3);
+  int row4_avg = get_row_average(row4);
+  int row5_avg = get_row_average(row5);
+  int row6_avg = get_row_average(row6);
+  int row7_avg = get_row_average(row7);
+  int row8_avg = get_row_average(row8);
+
 
   delay(1);
   }
