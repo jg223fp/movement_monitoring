@@ -73,9 +73,9 @@ void amg_read(void *param) {
     //Serial.print(" ");
   }
   //Serial.println();
+  int test = get_row_average(row8); 
+  Serial.println(test);
 
-  //Gör så att kalkyleringen av average är en task som händer  typ en gång i minuten
-  // kolla sedan rad för rad på sensorn vad som händer. Jämför mit average
   delay(1);
   }
 }
@@ -90,7 +90,6 @@ void amg_avg_temp(void *param) {
   }
   average_temp = sum/AMG88xx_PIXEL_ARRAY_SIZE;
   delay(10000);
-  Serial.println(average_temp);
   }
 }
 
@@ -107,6 +106,16 @@ void amg_init() {
         while (1);
     }
     delay(1000); // let sensor boot up
+}
+
+// Calculate the varegare of an array with 8 values
+int get_row_average(int arr[8]) {
+  int sum = 0;
+    for (int i = 0; i < 8; i++) {     
+       sum = sum + arr[i];    
+  }
+  average_temp = sum/8;
+  return average_temp;
 }
 
 
