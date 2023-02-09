@@ -151,7 +151,7 @@ if ((b>a)) {
 
 
 Serial.println(inRoom);
-delay(100);
+//delay(100);
 a=0;
 b=0;
 }
