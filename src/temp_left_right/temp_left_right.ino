@@ -14,8 +14,8 @@ float b = 0;   // right block
 bool leftFlag = false;
 bool rightFlag = false;
 int loopsWithFlag = 0;   // Number of spins with a flag set. Counting variable. Can not be adjusted.
-float hysteres = 0.3;  // Higher gives less sensitivity, lower more noise   0.3 is best so far
-int flagLoopLimit = 5; // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels
+float hysteres = 0.4;  // Higher gives less sensitivity, lower more noise   0.4 is best so far
+int flagLoopLimit = 10; // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
 int inRoom = 0;
 
 void setup() {
@@ -133,10 +133,7 @@ void loop() {
           leftFlag = true;
           }
         }
-    }
-
-    // check right block
-    if ((b>a)) {
+    } else if ((b>a)) {    // check right block
       if(leftFlag) {
         inRoom = inRoom + 1;
         leftFlag = false;
