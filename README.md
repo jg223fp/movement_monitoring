@@ -31,3 +31,10 @@ The idea for this project is to use an 8x8 IR thermal sensor for detection of pe
 
 ## Scenario
 Technique used for monitoring visitor flows is wanted for various areas. This projects uses a classroom as a scenario.
+
+
+## Todos
+
+- Add images to readme
+- Get mqtt working
+- Get wifi sniffer working
