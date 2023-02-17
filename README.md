@@ -37,4 +37,4 @@ Technique used for monitoring visitor flows is wanted for various areas. This pr
 
 - Add images to readme
 - Get mqtt working
-- Get wifi sniffer working
+- Get wifi sniffer working (promiscuous mode / monitor mode)
