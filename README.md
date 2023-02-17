@@ -38,3 +38,12 @@ Technique used for monitoring visitor flows is wanted for various areas. This pr
 - Add images to readme
 - Get mqtt working
 - Get wifi sniffer working (promiscuous mode / monitor mode)
+
+## LoPy
+1. While pins G23 and GND are shorted, reset the LoPy.
+
+2. Upload the code from the Arduino IDE.
+
+3. Remove the connection between G23 and GND and reset the LoPy again.
+
+4. To init serial monitor just write something in the serial terminal
