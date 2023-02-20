@@ -7,30 +7,23 @@
 String maclist[64][3]; 
 int listcount = 0;
 
-String KnownMac[10][2] = {  // Put devices you want to be reconized
-  {"Will-Phone","EC1F7ffffffD"},
-  {"Will-PC","E894Fffffff3"},
-  {"NAME","MACADDRESS"},
-  {"NAME","MACADDRESS"},
-  {"NAME","MACADDRESS"},
-  {"NAME","MACADDRESS"},
-  {"NAME","MACADDRESS"},
-  {"NAME","MACADDRESS"},
+// Ignore list: Devices in this list will not be counted. E.g. nearby network equipment
+String KnownMac[2][2] = { 
+  {"Johan-PC","E894Bffffff3"},
   {"NAME","MACADDRESS"}
-  
 };
 
-String defaultTTL = "60"; // Maximum time (Apx seconds) elapsed before device is consirded offline
+String defaultTTL = "60"; // Elapsed time before device is consirded offline
 
-const wifi_promiscuous_filter_t filt={ //Idk what this does
+const wifi_promiscuous_filter_t filt={ 
     .filter_mask=WIFI_PROMIS_FILTER_MASK_MGMT|WIFI_PROMIS_FILTER_MASK_DATA
 };
 
-typedef struct { // or this
+typedef struct {
   uint8_t mac[6];
 } __attribute__((packed)) MacAddr;
 
-typedef struct { // still dont know much about this
+typedef struct {
   int16_t fctl;
   int16_t duration;
   MacAddr da;
@@ -42,14 +35,14 @@ typedef struct { // still dont know much about this
 
 
   
-#define maxCh 13 //max Channel -> US = 11, EU = 13, Japan = 14
+#define maxCh 13 //max Channel EU = 13
 
 
 int curChannel = 1;
 
-
-void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) { //This is where packets end up after they get sniffed
-  wifi_promiscuous_pkt_t *p = (wifi_promiscuous_pkt_t*)buf; // Dont know what these 3 lines do
+//This is where packets end up after they get sniffed
+void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
+  wifi_promiscuous_pkt_t *p = (wifi_promiscuous_pkt_t*)buf;
   int len = p->rx_ctrl.sig_len;
   WifiMgmtHdr *wh = (WifiMgmtHdr*)p->payload;
   len -= sizeof(WifiMgmtHdr);
@@ -68,9 +61,9 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) { //This is where pack
   }
   mac.toUpperCase();
 
-  
+  // check if mac is already in array. if so reset TTL
   int added = 0;
-  for(int i=0;i<=63;i++){ // checks if the MAC address has been added before
+  for(int i=0;i<=63;i++){ 
     if(mac == maclist[i][0]){
       maclist[i][1] = defaultTTL;
       if(maclist[i][2] == "OFFLINE"){
@@ -94,13 +87,12 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) { //This is where pack
 
 
 
-//===== SETUP =====//
 void setup() {
 
-  /* start Serial */
+
   Serial.begin(115200);
 
-  /* setup wifi */
+// setup wifi for sniffing
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   esp_wifi_init(&cfg);
   esp_wifi_set_storage(WIFI_STORAGE_RAM);
@@ -110,11 +102,9 @@ void setup() {
   esp_wifi_set_promiscuous_filter(&filt);
   esp_wifi_set_promiscuous_rx_cb(&sniffer);
   esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
-  
-  Serial.println("starting!");
 }
 
-void purge(){ // This maanges the TTL
+void purge(){ // This manges the TTL
   for(int i=0;i<=63;i++){
     if(!(maclist[i][0] == "")){
       int ttl = (maclist[i][1].toInt());
@@ -130,7 +120,8 @@ void purge(){ // This maanges the TTL
   }
 }
 
-void updatetime(){ // This updates the time the device has been online for
+// This updates the time the device has been online for
+void updatetime(){ 
   for(int i=0;i<=63;i++){
     if(!(maclist[i][0] == "")){
       if(maclist[i][2] == "")maclist[i][2] = "0";
@@ -146,24 +137,24 @@ void updatetime(){ // This updates the time the device has been online for
   }
 }
 
-void showpeople(){ // This checks if the MAC is in the reckonized list and then displays it on the OLED and/or prints it to serial.
-  String forScreen = "";
+/*
+void showpeople(){ // This checks if the MAC is in the reckonized list and then prints it to serial.
   for(int i=0;i<=63;i++){
     String tmp1 = maclist[i][0];
     if(!(tmp1 == "")){
       for(int j=0;j<=9;j++){
         String tmp2 = KnownMac[j][1];
         if(tmp1 == tmp2){
-          forScreen += (KnownMac[j][0] + " : " + maclist[i][2] + "\n");
           Serial.print(KnownMac[j][0] + " : " + tmp1 + " : " + maclist[i][2] + "\n -- \n");
         }
       }
     }
   }
 }
+*/
 
 void loop() {
-    //Serial.println("Changed channel:" + String(curChannel));
+    // loop through wifi channels
     if(curChannel > maxCh){ 
       curChannel = 1;
     }
@@ -171,9 +162,21 @@ void loop() {
     delay(1000);
     updatetime();
     purge();
-    showpeople();
     curChannel++;
-    
-    
 }
+
+// todo:
+// Remove macs that has passed TTL instead of adding offline
+// printout number of macs
+// reset variable evrytime it is sent
+// Adssign number of macs limit to variable instead of 64
+
+// chek if in known macs
+// if -> drop
+// check if in array
+// if not -> add, if -> reset TTL  
+// update time
+// after ttl -> remove
+
+
 
