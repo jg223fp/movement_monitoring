@@ -37,18 +37,18 @@ void setup() {
     delay(100); // let sensor boot up
 
     // Set led outputs
-    pinMode (6,OUTPUT); // RED led
-    pinMode (8,OUTPUT); // Green led
+    pinMode (26,OUTPUT); // RED led
+    pinMode (25,OUTPUT); // Green led
 
     //turn leds on
-    digitalWrite(6,HIGH);
-    digitalWrite(8,HIGH);
+    digitalWrite(26,HIGH);
+    digitalWrite(25,HIGH);
 
     delay(3000);
 
     //Turn leds off
-    digitalWrite(6,LOW);
-    digitalWrite(8,LOW);
+    digitalWrite(26,LOW);
+    digitalWrite(25,LOW);
 }
 
 
@@ -57,8 +57,8 @@ void loop() {
     amg.readPixels(pixels);
 
     // Write all LEDS low
-    digitalWrite (6,LOW);
-    digitalWrite (8,LOW);
+    digitalWrite (26,LOW);
+    digitalWrite (25,LOW);
 
     
 /*   // Code for printing all pixels
@@ -129,7 +129,7 @@ void loop() {
           rightFlag = false;
         } else {
           if (a-b > hysteres) {
-          digitalWrite (6,HIGH);
+          digitalWrite (26,HIGH);
           leftFlag = true;
           }
         }
@@ -139,7 +139,7 @@ void loop() {
         leftFlag = false;
       } else {
         if (b-a > hysteres) {
-        digitalWrite (8,HIGH);
+        digitalWrite (25,HIGH);
         rightFlag = true;
         }
       }
