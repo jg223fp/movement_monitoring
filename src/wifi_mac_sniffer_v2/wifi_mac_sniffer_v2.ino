@@ -10,11 +10,11 @@ String maclist[macLimit][2]; // list with collected macadresses [0]: macadress  
 int listIndex = 0;  // variavble for knowing what index to put the new mac on in maclist
 int macCount = 0; // variable to keep track of active mac adresses in the list
 int curChannel = 1;  // current channel
-String defaultTTL = "60"; // Elapsed time before device is consirded offline
+String defaultTTL = "60"; // Elapsed time before device is consirded offline and then removed from the list
 int initCount = 0;      // how many macs there are in init list
-String initList[50];
-bool initActive = true;
-bool verboseOutput = true; // change to true to get more info
+String initList[50];    // array used to store macs found under the initiation
+bool initActive = true;  // tells program that initiation should be run.
+bool verboseOutput = false; // change to true to get more info
 
 
 const wifi_promiscuous_filter_t filt={ 
@@ -34,9 +34,6 @@ typedef struct {
   int16_t seqctl;
   unsigned char payload[];
 } __attribute__((packed)) WifiMgmtHdr;
-
-
-  
 
 
 //This is where packets end up after they get sniffed
@@ -68,7 +65,7 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
     }
   }
 
-  if(drop && verboseOutput) {    // verbose outoput, can be removed
+  if(drop && verboseOutput) {    // verbose outoput
     Serial.println("Mac already in maclist. Dropping...");
   }
 
@@ -127,7 +124,7 @@ void checkTtl(){
   }
 }
 
-// This prints the time left of the devices TTL
+// Prints the time left of the devices TTL
 void printTime(){ 
   Serial.println("Active macadresses:");
   for(int i=0;i<=macLimit;i++){
@@ -157,8 +154,8 @@ void setup() {
 // Scan for background noice
   Serial.println("Scanning for background mac addresses....");
 
-  for(int i=0; i<(maxCh*initScanTimes); i++) {
-    if(curChannel > maxCh){ 
+  for (int i=0; i<(maxCh*initScanTimes); i++){
+    if (curChannel > maxCh){ 
       curChannel = 1;
     }
     esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
@@ -176,23 +173,25 @@ void setup() {
 
 
 void loop() {
+
     // loop through wifi channels
     if(curChannel > maxCh){ 
       curChannel = 1;
     }
+
     esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
     delay(1000);
+
     if (verboseOutput) {
       printTime();
       Serial.println("list index: " + String(listIndex));
     }
+
     checkTtl();   
     Serial.println("Number of active macs: " + String(macCount));
     Serial.println();
+    
     curChannel++;
 }
-
-// todo:
-// Change to int instead of string in array
 
 
