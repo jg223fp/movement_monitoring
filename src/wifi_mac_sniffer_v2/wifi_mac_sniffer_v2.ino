@@ -15,15 +15,6 @@ String initList[50];
 bool initActive = true;
 
 
-// Ignore list: Devices in this list will not be counted. E.g. nearby network equipment
-#define numOfKnown 2
-String KnownMac[numOfKnown][2] = { 
-  {"Johan-PC","E894Bffffff3"},
-  {"NAME","MACADDRESS"}
-};
-
-
-
 const wifi_promiscuous_filter_t filt={ 
     .filter_mask=WIFI_PROMIS_FILTER_MASK_MGMT|WIFI_PROMIS_FILTER_MASK_DATA
 };
@@ -67,12 +58,16 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
   }
   mac.toUpperCase();
 
-// check if mac is in ignore list   UPDATE WITH initList here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  bool known = false;
-  for(int i=0; i < numOfKnown; i++) {
-    if (mac == KnownMac[i][1]) {
-      known = true;
+// check if mac is in ignore list that was built during init, if it is it will be dropped.
+  bool drop = false;
+  for(int i=0; i <= initCount; i++) {
+    if (mac == initList[i]) {
+      drop = true;
     }
+  }
+
+  if(drop) {    // verbose outoput, can be removed
+    Serial.println("drop");
   }
 
   bool inList = false;
@@ -89,7 +84,7 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
       initCount ++;
     }
 
-  } else if (!known) { // this part runs during the standard sniffing
+  } else if (!drop) { // this part runs during the standard sniffing
     // check if mac is already in array. if so reset TTL
     for(int i=0;i<=macLimit;i++){ 
       if(mac == maclist[i][0]){
@@ -187,16 +182,7 @@ void loop() {
 }
 
 // todo:
-// reset variable evrytime it is sent
 // Change to int instead of string in array
 // Add code for background noice controll. Check macs for 30 seconds and add to known array automatically
-
-// chek if in known macs
-// if -> drop
-// check if in array
-// if not -> add, if -> reset TTL  
-// update time
-// after ttl -> remove
-
 
 

@@ -37,7 +37,6 @@ Technique used for monitoring visitor flows is wanted for various areas. This pr
 
 - Add images to readme
 - Get mqtt working
-- Get wifi sniffer working (promiscuous mode / monitor mode)
 
 ## LoPy
 1. While pins G23 and GND are shorted, reset the LoPy.
@@ -47,3 +46,11 @@ Technique used for monitoring visitor flows is wanted for various areas. This pr
 3. Remove the connection between G23 and GND and reset the LoPy again.
 
 4. To init serial monitor just write something in the serial terminal
+
+## wifi sniffer features:
+- scans network 13 channels for 26 seconds.
+- add found macs to ignore list
+- then scans for macs and keeps track of count
+- every mac gets a ttl of 60 seconds
+- if ttl passes the mac is removed from the list
+- every time the mac is found the ttl is reset to 60
