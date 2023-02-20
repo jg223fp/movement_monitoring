@@ -3,16 +3,18 @@
 
 #include "esp_wifi.h"
 
-
+#define initScanTimes 2 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
 #define maxCh 13 //max Channel EU = 13
-#define macLimit 128 // number of macs that the controller can store
-String maclist[macLimit][2]; 
-int listcount = 0;  // variavble for knowing how many macs there are in the list
+#define macLimit 128 // maximum number of macs that the controller can store
+String maclist[macLimit][2]; // list with collected macadresses [0]: macadress   [1]: TTL left
+int listIndex = 0;  // variavble for knowing what index to put the new mac on in maclist
+int macCount = 0; // variable to keep track of active mac adresses in the list
 int curChannel = 1;  // current channel
 String defaultTTL = "60"; // Elapsed time before device is consirded offline
 int initCount = 0;      // how many macs there are in init list
 String initList[50];
 bool initActive = true;
+bool verboseOutput = true; // change to true to get more info
 
 
 const wifi_promiscuous_filter_t filt={ 
@@ -66,8 +68,8 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
     }
   }
 
-  if(drop) {    // verbose outoput, can be removed
-    Serial.println("drop");
+  if(drop && verboseOutput) {    // verbose outoput, can be removed
+    Serial.println("Mac already in maclist. Dropping...");
   }
 
   bool inList = false;
@@ -94,12 +96,13 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
     }
     // If its new. add it to the array.
     if(!inList){ 
-      maclist[listcount][0] = mac;
-      maclist[listcount][1] = defaultTTL;
-      listcount ++;
-      if(listcount >= macLimit) { 
+      maclist[listIndex][0] = mac;
+      maclist[listIndex][1] = defaultTTL;
+      listIndex ++;
+      macCount ++;
+      if(listIndex >= macLimit) { 
         Serial.println("Too many addresses, reseting counter");
-        listcount = 0;
+        listIndex = 0;
       }
     }
   }
@@ -113,7 +116,10 @@ void checkTtl(){
       ttl --;
       if(ttl <= 0) {
         maclist[i][0] = "";
-        listcount --;
+        macCount --;
+        if (verboseOutput) {
+          Serial.println("1 adress removed");
+        }
       } else {
         maclist[i][1] = String(ttl);
       }
@@ -123,6 +129,7 @@ void checkTtl(){
 
 // This prints the time left of the devices TTL
 void printTime(){ 
+  Serial.println("Active macadresses:");
   for(int i=0;i<=macLimit;i++){
     if(!(maclist[i][0] == "")){ 
       Serial.println(maclist[i][0] + "  timeleft: " + maclist[i][1]);      
@@ -150,7 +157,7 @@ void setup() {
 // Scan for background noice
   Serial.println("Scanning for background mac addresses....");
 
-  for(int i=0; i<(maxCh*2); i++) {
+  for(int i=0; i<(maxCh*initScanTimes); i++) {
     if(curChannel > maxCh){ 
       curChannel = 1;
     }
@@ -175,14 +182,17 @@ void loop() {
     }
     esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
     delay(1000);
-    //printTime();  
+    if (verboseOutput) {
+      printTime();
+      Serial.println("list index: " + String(listIndex));
+    }
     checkTtl();   
-    Serial.println(listcount);
+    Serial.println("Number of active macs: " + String(macCount));
+    Serial.println();
     curChannel++;
 }
 
 // todo:
 // Change to int instead of string in array
-// Add code for background noice controll. Check macs for 30 seconds and add to known array automatically
 
 
