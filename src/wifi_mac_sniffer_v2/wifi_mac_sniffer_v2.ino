@@ -6,10 +6,13 @@
 
 #define maxCh 13 //max Channel EU = 13
 #define macLimit 128 // number of macs that the controller can store
-String maclist[macLimit][3]; 
+String maclist[macLimit][2]; 
 int listcount = 0;  // variavble for knowing how many macs there are in the list
-int curChannel = 1;  
+int curChannel = 1;  // current channel
 String defaultTTL = "60"; // Elapsed time before device is consirded offline
+int initCount = 0;      // how many macs there are in init list
+String initList[50];
+bool initActive = true;
 
 
 // Ignore list: Devices in this list will not be counted. E.g. nearby network equipment
@@ -64,7 +67,7 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
   }
   mac.toUpperCase();
 
-// check if mac is in ignore list
+// check if mac is in ignore list   UPDATE WITH initList here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   bool known = false;
   for(int i=0; i < numOfKnown; i++) {
     if (mac == KnownMac[i][1]) {
@@ -72,9 +75,22 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
     }
   }
 
-  if (!known) {
+  bool inList = false;
+  if (initActive) { // this part runs during initiation to scan for background network activity
+     // check if mac is already in init array.
+    for(int i=0;i<=50;i++){ 
+      if(mac == initList[i]){
+        inList = true;
+      }
+    }
+    // If its new. add it to the array.
+    if(!inList){ 
+      initList[initCount] = mac;
+      initCount ++;
+    }
+
+  } else if (!known) { // this part runs during the standard sniffing
     // check if mac is already in array. if so reset TTL
-    bool inList = false;
     for(int i=0;i<=macLimit;i++){ 
       if(mac == maclist[i][0]){
         maclist[i][1] = defaultTTL;
@@ -90,6 +106,31 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
         Serial.println("Too many addresses, reseting counter");
         listcount = 0;
       }
+    }
+  }
+}
+
+// check if TTL is over 0. if not, the mac is removed from the array
+void checkTtl(){ 
+  for(int i=0;i<=macLimit;i++) {
+    if(!(maclist[i][0] == "")){
+      int ttl = (maclist[i][1].toInt());
+      ttl --;
+      if(ttl <= 0) {
+        maclist[i][0] = "";
+        listcount --;
+      } else {
+        maclist[i][1] = String(ttl);
+      }
+    }
+  }
+}
+
+// This prints the time left of the devices TTL
+void printTime(){ 
+  for(int i=0;i<=macLimit;i++){
+    if(!(maclist[i][0] == "")){ 
+      Serial.println(maclist[i][0] + "  timeleft: " + maclist[i][1]);      
     }
   }
 }
@@ -110,31 +151,25 @@ void setup() {
   esp_wifi_set_promiscuous_filter(&filt);
   esp_wifi_set_promiscuous_rx_cb(&sniffer);
   esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
-}
 
-// checks if TTL is over 0. if not, the mac is removed
-void checkTtl(){ 
-  for(int i=0;i<=macLimit;i++) {
-    if(!(maclist[i][0] == "")){
-      int ttl = (maclist[i][1].toInt());
-      ttl --;
-      if(ttl <= 0) {
-        maclist[i][0] = "";
-        listcount --;
-      }else {
-        maclist[i][1] = String(ttl);
-      }
-    }
-  }
-}
+// Scan for background noice
+  Serial.println("Scanning for background mac addresses....");
 
-// This prints the time left of the devices TTL
-void printTime(){ 
-  for(int i=0;i<=macLimit;i++){
-    if(!(maclist[i][0] == "")){ 
-      Serial.println(maclist[i][0] + "  timeleft: " + maclist[i][1]);      
+  for(int i=0; i<(maxCh*2); i++) {
+    if(curChannel > maxCh){ 
+      curChannel = 1;
     }
+    esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
+    delay(1000); 
+    Serial.println(initCount);
+    curChannel++;
   }
+  Serial.println("Scan completed...");
+  Serial.println("Found " + String(initCount));
+  initActive = false;  // turn of init scan
+  curChannel = 1;
+  Serial.println("Statring sniffer...");
+
 }
 
 
@@ -145,7 +180,7 @@ void loop() {
     }
     esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
     delay(1000);
-   // printTime();  
+    //printTime();  
     checkTtl();   
     Serial.println(listcount);
     curChannel++;
@@ -154,6 +189,7 @@ void loop() {
 // todo:
 // reset variable evrytime it is sent
 // Change to int instead of string in array
+// Add code for background noice controll. Check macs for 30 seconds and add to known array automatically
 
 // chek if in known macs
 // if -> drop
