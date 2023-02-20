@@ -86,8 +86,8 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
       maclist[listcount][0] = mac;
       maclist[listcount][1] = defaultTTL;
       listcount ++;
-      if(listcount >= 64){                          // NEED TO CHANGE THIS
-        Serial.println("Too many addresses");
+      if(listcount >= macLimit) { 
+        Serial.println("Too many addresses, reseting counter");
         listcount = 0;
       }
     }
