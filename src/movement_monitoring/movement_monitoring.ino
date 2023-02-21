@@ -13,9 +13,8 @@
 
 
 
-void TaskBlink( void *pvParameters );
-void TaskAnalogRead( void *pvParameters );
-TaskHandle_t analog_read_task_handle; // You can (don't have to) use this to be able to manipulate a task from somewhere else.
+void TaskBlinkRed( void *pvParameters );
+void TaskBlinkGrn( void *pvParameters );
 
 
 /*---------------------- Setup ----------------------------------------------*/
@@ -29,23 +28,24 @@ void setup() {
 
   //------Tasks setup-----------//
   uint32_t blink_delay = 1000; // Delay between changing state on LED pin
-  xTaskCreate(
-    TaskBlink
-    ,  "Task Blink" // A name just for humans
+  xTaskCreatePinnedToCore(
+    TaskBlinkRed
+    ,  "Task Blink Red" // A name just for humans
     ,  2048        // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
     ,  (void*) &blink_delay // Task parameter which can modify the task behavior. This must be passed as pointer to void.
     ,  2  // Priority
     ,  NULL // Task handle is not used here - simply pass NULL
+    ,  ARDUINO_RUNNING_CORE0 // Core on which the task will ru
     );
 
   xTaskCreatePinnedToCore(
-    TaskAnalogRead
-    ,  "Analog Read"
+    TaskBlinkGrn
+    ,  "Green blink"
     ,  2048  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
     ,  1  // Priority
-    ,  &analog_read_task_handle // With task handle we will be able to manipulate with this task.
-    ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
+    ,  NULL // With task handle we will be able to manipulate with this task.
+    ,  ARDUINO_RUNNING_CORE1 // Core on which the task will run
     );
 }
 
@@ -58,9 +58,8 @@ void loop(){
 /*---------------------- Tasks ----------------------------------------------*/
 //----------------------------------------------------------------------------//
 
-void TaskBlink(void *pvParameters){  // This is a task.
+void TaskBlinkRed(void *pvParameters){  // This is a task.
   uint32_t blink_delay = *((uint32_t*)pvParameters);
-
 
   while (true){ // A Task shall never return or exit.
     digitalWrite(RED_LED, HIGH);   // turn the LED on (HIGH is the voltage level)
@@ -73,15 +72,15 @@ void TaskBlink(void *pvParameters){  // This is a task.
   }
 }
 
-void TaskAnalogRead(void *pvParameters){ 
+void TaskBlinkGrn(void *pvParameters){ 
   (void) pvParameters;
 
-  while (true){
-    // read the input on analog pin:
-    int sensorValue = 11;
-    // print out the value you read:
-    Serial.println(sensorValue);
-    delay(5000); // 100ms delay
+  while (true){ // A Task shall never return or exit.
+    digitalWrite(GRN_LED, HIGH);   
+    Serial.println("blink");
+    delay(500);
+    digitalWrite(GRN_LED, LOW);    
+    delay(500);
   }
 }
 
