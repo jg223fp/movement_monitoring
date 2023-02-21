@@ -1,15 +1,33 @@
-#define ARDUINO_RUNNING_CORE 1
+/*---------------------- Imports ----------------------------------------------*/
+//----------------------------------------------------------------------------//
 
-// Define two tasks for Blink & AnalogRead.
+/*---------------------- Definitions ----------------------------------------------*/
+//----------------------------------------------------------------------------//
+#define ARDUINO_RUNNING_CORE0 0
+#define ARDUINO_RUNNING_CORE1 1
+#define RED_LED 25
+#define GRN_LED 26
+
+/*---------------------- Globals ----------------------------------------------*/
+//----------------------------------------------------------------------------//
+
+
+
 void TaskBlink( void *pvParameters );
 void TaskAnalogRead( void *pvParameters );
 TaskHandle_t analog_read_task_handle; // You can (don't have to) use this to be able to manipulate a task from somewhere else.
 
-// The setup function runs once when you press reset or power on the board.
+
+/*---------------------- Setup ----------------------------------------------*/
+//----------------------------------------------------------------------------//
 void setup() {
-  // Initialize serial communication at 115200 bits per second:
-  Serial.begin(115200);
-  // Set up two tasks to run independently.
+   Serial.begin(115200);
+
+  //------Pin setup-----------//
+  pinMode(RED_LED, OUTPUT);
+  pinMode(GRN_LED, OUTPUT);
+
+  //------Tasks setup-----------//
   uint32_t blink_delay = 1000; // Delay between changing state on LED pin
   xTaskCreate(
     TaskBlink
@@ -20,7 +38,6 @@ void setup() {
     ,  NULL // Task handle is not used here - simply pass NULL
     );
 
-  // This variant of task creation can also specify on which core it will be run (only relevant for multi-core ESPs)
   xTaskCreatePinnedToCore(
     TaskAnalogRead
     ,  "Analog Read"
@@ -28,33 +45,30 @@ void setup() {
     ,  NULL  // When no parameter is used, simply pass NULL
     ,  1  // Priority
     ,  &analog_read_task_handle // With task handle we will be able to manipulate with this task.
-    ,  ARDUINO_RUNNING_CORE // Core on which the task will run
+    ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
     );
-
-  Serial.printf("Basic Multi Threading Arduino Example\n");
-  // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
 }
 
+/*---------------------- Main loop ----------------------------------------------*/
+//----------------------------------------------------------------------------//
 void loop(){
 
 }
 
-/*--------------------------------------------------*/
-/*---------------------- Tasks ---------------------*/
-/*--------------------------------------------------*/
+/*---------------------- Tasks ----------------------------------------------*/
+//----------------------------------------------------------------------------//
 
 void TaskBlink(void *pvParameters){  // This is a task.
   uint32_t blink_delay = *((uint32_t*)pvParameters);
 
-  pinMode(25, OUTPUT);
 
   while (true){ // A Task shall never return or exit.
-    digitalWrite(25, HIGH);   // turn the LED on (HIGH is the voltage level)
+    digitalWrite(RED_LED, HIGH);   // turn the LED on (HIGH is the voltage level)
     // arduino-esp32 has FreeRTOS configured to have a tick-rate of 1000Hz and portTICK_PERIOD_MS
     // refers to how many milliseconds the period between each ticks is, ie. 1ms.
     Serial.println("blink");
     delay(blink_delay);
-    digitalWrite(25, LOW);    // turn the LED off by making the voltage LOW
+    digitalWrite(RED_LED, LOW);    // turn the LED off by making the voltage LOW
     delay(blink_delay);
   }
 }
@@ -70,3 +84,6 @@ void TaskAnalogRead(void *pvParameters){
     delay(5000); // 100ms delay
   }
 }
+
+/*---------------------- Functions ----------------------------------------------*/
+//----------------------------------------------------------------------------//
