@@ -57,8 +57,9 @@ void TaskSniffPackets( void *pvParameters );
 /*---------------------- Setup ----------------------------------------------*/
 //----------------------------------------------------------------------------//
 void setup() {
-   Serial.begin(115200);
-
+  Serial.begin(115200);
+  Serial.println("Movement monitor boot");
+  Serial.println("Starting tasks...");
   //------Pin setup-----------//
   pinMode(RED_LED, OUTPUT);
   pinMode(GRN_LED, OUTPUT);
@@ -68,7 +69,7 @@ void setup() {
   xTaskCreate(
     TaskBlinkRed
     ,  "Task Blink Red" // A name just for humans
-    ,  2048        // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
+    ,  1024        // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
     ,  (void*) &blink_delay // Task parameter which can modify the task behavior. This must be passed as pointer to void.
     ,  1  // Priority
     ,  NULL // Task handle is not used here - simply pass NULL
@@ -77,7 +78,7 @@ void setup() {
   xTaskCreatePinnedToCore(
     TaskBlinkGrn
     ,  "Green blink"
-    ,  2048  // Stack size
+    ,  1024  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
     ,  2  // Priority
     ,  NULL // With task handle we will be able to manipulate with this task.
@@ -86,7 +87,7 @@ void setup() {
 
   xTaskCreatePinnedToCore(
     TaskSniffPackets
-    ,  "Packet sniffer"
+    ,  "PACKET SNIFFER"
     ,  2048  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
     ,  5  // Priority
@@ -136,7 +137,7 @@ void TaskBlinkGrn(void *pvParameters){
 void TaskSniffPackets(void *pvParameters){ 
   (void) pvParameters;
 
-//----SETUP------//
+//---------SETUP-----------//
 // setup wifi for sniffing
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   esp_wifi_init(&cfg);
@@ -149,7 +150,8 @@ void TaskSniffPackets(void *pvParameters){
   esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
 
 // Scan for background noice
-  Serial.println("Scanning for background mac addresses....");
+  Serial.println("PACKET SNIFFER: Initiating, scanning for background mac addresses...");
+  Serial.println("PACKET SNIFFER: Addressess found: ");
 
   for (int i=0; i<(maxCh*initScanTimes); i++){
     if (curChannel > maxCh){ 
@@ -157,17 +159,19 @@ void TaskSniffPackets(void *pvParameters){
     }
     esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
     delay(1000); 
-    Serial.println(initCount);
+    Serial.print(initCount);
+    Serial.print("...");
     curChannel++;
   }
-  Serial.println("Scan completed...");
-  Serial.println("Found " + String(initCount));
+  Serial.println();
+  Serial.println("PACKET SNIFFER: Scan completed...");
+  Serial.println("PACKET SNIFFER: Found " + String(initCount));
   initActive = false;  // turn of init scan
   curChannel = 1;
-  Serial.println("Statring sniffer...");
+  Serial.println("PACKET SNIFFER: Statring sniffer...");
 
 
-//----MAIN LOOP------//
+//---------MAIN LOOP-----------//
   while (true){
     // loop through wifi channels
     if(curChannel > maxCh){ 
@@ -177,10 +181,10 @@ void TaskSniffPackets(void *pvParameters){
     delay(1000);
     if (verboseOutput) {
       printTime();
-      Serial.println("list index: " + String(listIndex));
+      Serial.println("PACKET SNIFFER: list index: " + String(listIndex));
     }
     checkTtl();   
-    Serial.println("Number of active macs: " + String(macCount));
+    Serial.println("PACKET SNIFFER: Number of active macs: " + String(macCount));
     Serial.println();
     curChannel++;
   }
@@ -197,7 +201,7 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
   WifiMgmtHdr *wh = (WifiMgmtHdr*)p->payload;
   len -= sizeof(WifiMgmtHdr);
   if (len < 0){
-    Serial.println("Receuved 0");
+    Serial.println("PACKET SNIFFER: Receuved 0");
     return;
   }
   String packet;
@@ -252,7 +256,7 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
       listIndex ++;
       macCount ++;
       if(listIndex >= macLimit) { 
-        Serial.println("Too many addresses, reseting list index");
+        Serial.println("PACKET SNIFFER: Too many addresses, reseting list index");
         listIndex = 0;
       }
     }
@@ -269,7 +273,7 @@ void checkTtl(){
         maclist[i][0] = "";
         macCount --;
         if (verboseOutput) {
-          Serial.println("1 adress removed");
+          Serial.println("PACKET SNIFFER: 1 adress removed");
         }
       } else {
         maclist[i][1] = String(ttl);
@@ -280,10 +284,10 @@ void checkTtl(){
 
 // Prints the time left of the devices TTL
 void printTime(){ 
-  Serial.println("Active macadresses:");
+  Serial.println("PACKET SNIFFER: Active macadresses:");
   for(int i=0;i<=macLimit;i++){
     if(!(maclist[i][0] == "")){ 
-      Serial.println(maclist[i][0] + "  timeleft: " + maclist[i][1]);      
+      Serial.println("PACKET SNIFFER: " + maclist[i][0] + "  timeleft: " + maclist[i][1]);      
     }
   }
 }
