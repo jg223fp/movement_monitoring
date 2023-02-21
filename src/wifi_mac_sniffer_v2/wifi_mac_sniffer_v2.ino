@@ -14,7 +14,7 @@ String defaultTTL = "60"; // Elapsed time before device is consirded offline and
 int initCount = 0;      // how many macs there are in init list
 String initList[50];    // array used to store macs found under the initiation
 bool initActive = true;  // tells program that initiation should be run.
-bool verboseOutput = false; // change to true to get more info
+bool verboseOutput = true; // change to true to get more info
 
 
 const wifi_promiscuous_filter_t filt={ 
@@ -36,7 +36,7 @@ typedef struct {
 } __attribute__((packed)) WifiMgmtHdr;
 
 
-//This is where packets end up after they get sniffed
+//Packets end up here after they get sniffed
 void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
   wifi_promiscuous_pkt_t *p = (wifi_promiscuous_pkt_t*)buf;
   int len = p->rx_ctrl.sig_len;
@@ -65,9 +65,9 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
     }
   }
 
-  if(drop && verboseOutput) {    // verbose outoput
-    Serial.println("Mac already in maclist. Dropping...");
-  }
+  //if(drop && verboseOutput) {    // verbose outoput
+  //  Serial.println("Mac already in maclist. Dropping...");
+  //}
 
   bool inList = false;
   if (initActive) { // this part runs during initiation to scan for background network activity
@@ -98,7 +98,7 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
       listIndex ++;
       macCount ++;
       if(listIndex >= macLimit) { 
-        Serial.println("Too many addresses, reseting counter");
+        Serial.println("Too many addresses, reseting list index");
         listIndex = 0;
       }
     }
