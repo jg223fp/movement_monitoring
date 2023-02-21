@@ -24,12 +24,10 @@ float temperature = 0;
 
 void setup() {
   Serial.begin(115200);
-  setup_wifi();
-  client.setServer(mqtt_server, mqttPort);  // move to reconnect function
-  //client.setCallback(callback);
+  connectWifi();
 }
 
-void setup_wifi() {
+void connectWifi() {
   delay(10);
   Serial.println();
   Serial.print("Connecting to ");
@@ -49,7 +47,8 @@ void setup_wifi() {
 }
 
 
-void reconnect() {
+void connectMqtt() {
+  client.setServer(mqtt_server, mqttPort);
   // Loop until we're reconnected
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
@@ -67,8 +66,12 @@ void reconnect() {
 }
 
 void loop() {
+
+  if (WiFi.status() != WL_CONNECTED) {
+    connectWifi();
+  }
   if (!client.connected()) {
-    reconnect();
+    connectMqtt();
   }
   client.loop();
 
