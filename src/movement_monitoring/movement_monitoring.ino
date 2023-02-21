@@ -28,14 +28,13 @@ void setup() {
 
   //------Tasks setup-----------//
   uint32_t blink_delay = 1000; // Delay between changing state on LED pin
-  xTaskCreatePinnedToCore(
+  xTaskCreate(
     TaskBlinkRed
     ,  "Task Blink Red" // A name just for humans
     ,  2048        // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
     ,  (void*) &blink_delay // Task parameter which can modify the task behavior. This must be passed as pointer to void.
     ,  1  // Priority
     ,  NULL // Task handle is not used here - simply pass NULL
-    ,  ARDUINO_RUNNING_CORE0 // Core on which the task will ru
     );
 
   xTaskCreatePinnedToCore(
