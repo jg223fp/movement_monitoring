@@ -62,8 +62,6 @@ String clientId = "movement_sensor_box";              // try to move to def
 const char* mqttTopic = "jg223fp/feeds/Dayli_flow";   // try to move to def
 WiFiClient espClient;
 PubSubClient client(espClient);
-long lastMsg = 0;
-char msg[50];
 float temperature = 0;    // REMOVE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // tasks globals
@@ -214,7 +212,6 @@ void TaskSniffPackets(void *pvParameters){
     }
     checkTtl();   
     Serial.println("PACKET SNIFFER: Number of active macs: " + String(macCount));
-    Serial.println();
     curChannel++;
   }
 }
@@ -235,7 +232,13 @@ void TaskMqttWifi(void *pvParameters){
       connectMqtt();
     }
     client.loop();
-    delay(2000);
+
+    delay(5000);
+    // Convert the value to a char array
+    char macString[8];
+    dtostrf(macCount, 1, 2, macString);
+    client.publish(mqttTopic, macString);
+    Serial.println("MQTT&WIFI: Published macCount");
   }
 
 }
