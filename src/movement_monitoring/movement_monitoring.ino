@@ -228,6 +228,13 @@ void TaskMqttWifi(void *pvParameters){
 
 
   while(true){
+    if (WiFi.status() != WL_CONNECTED) {
+    connectWifi();
+    }
+    if (!client.connected()) {
+      connectMqtt();
+    }
+    client.loop();
     delay(2000);
   }
 
@@ -355,6 +362,24 @@ void connectWifi() {
   Serial.println("MQTT&WIFI: WiFi connected");
   Serial.println("MQTT&WIFI: IP address: ");
   Serial.println(WiFi.localIP());
+}
+
+void connectMqtt() {
+  client.setServer(mqtt_server, mqttPort);
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    Serial.print("MQTT&WIFI: Attempting MQTT connection...");
+    // Attempt to connect
+    if (client.connect(clientId.c_str(), IO_USERNAME, IO_KEY)) {
+            Serial.println("MQTT&WIFI: Mqtt connected");
+    } else {
+      Serial.print(" MQTT&WIFI: failed, rc=");
+      Serial.print(client.state());
+      Serial.println("MQTT&WIFI: try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
 }
 
 //------------------------------------------------------------------//
