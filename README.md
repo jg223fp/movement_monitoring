@@ -41,6 +41,8 @@ Technique used for monitoring visitor flows is wanted for various areas. This pr
 - Add mqtt publish for number in room
 - Change init for sniffer to 2 instead of 0
 - Add protection for movement miontoring so it cant be -1 in the count
+- create printout task that prints the statuses instead of mqtt wifi task doing it.
+- create something that printsout the actual cores and tasks
 
 ## LoPy
 1. While pins G23 and GND are shorted, reset the LoPy.

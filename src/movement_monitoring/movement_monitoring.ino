@@ -17,7 +17,7 @@
 #define GRN_LED 26
 
 // Wifi packet sniffer
-#define initScanTimes 0 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
+#define initScanTimes 2 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
 #define maxCh 13 //max Channel EU = 13
 #define macLimit 128 // maximum number of macs that the controller can store
 
@@ -74,8 +74,8 @@ float b = 0;   // right block
 bool leftFlag = false;
 bool rightFlag = false;
 int loopsWithFlag = 0;   // Number of spins with a flag set. Counting variable. Can not be adjusted.
-float hysteres = 0.4;  // Higher gives less sensitivity, lower more noise   0.4 is best so far
-int flagLoopLimit = 40; // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
+float hysteres = 0.5;  // Higher gives less sensitivity, lower more noise   0.4 is best so far
+int flagLoopLimit = 50; // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
 int inRoom = 1;  // number of people in the room from the begining. Should be zero but in test case I am in the room
 
 // Tasks globals
@@ -294,15 +294,15 @@ void TaskMovementMonitoring(void *pvParameters){
 
     // 16 pixels: the two rows in the middle on each side
     for (int i=2; i<=63; i=i+8) {
-      a = a + pixels[i];
+      //a = a + pixels[i];
       a = a + pixels[i+1];
       b = b + pixels[i+2];
-      b = b + pixels[i+3];
+      //b = b + pixels[i+3];
     }
 
     //obtain average value for each block
-    a = (a/16);
-    b = (b/16);
+    a = (a/8);
+    b = (b/8);
 
 // check how many spins a flag has been raised. If nothing happens, reset the flags
     if (leftFlag || rightFlag) {
