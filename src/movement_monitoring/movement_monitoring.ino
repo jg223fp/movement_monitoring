@@ -65,7 +65,6 @@ const char* mqttTopicMacs = "jg223fp/feeds/mac_addresses_in_area";   // try to m
 const char* mqttTopicInRoom = "jg223fp/feeds/people_in_room";   // try to move to def
 WiFiClient espClient;
 PubSubClient client(espClient);
-float temperature = 0;    // REMOVE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 // Movement monitoring globals
 Adafruit_AMG88xx amg;
@@ -77,7 +76,7 @@ bool rightFlag = false;
 int loopsWithFlag = 0;   // Number of spins with a flag set. Counting variable. Can not be adjusted.
 float hysteres = 0.5;  // Higher gives less sensitivity, lower more noise   0.4 is best so far
 int flagLoopLimit = 15; // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
-int inRoom = 0;
+int inRoom = 1;  // number of people in the room from the begining. Should be zero but in test case I am in the room
 
 // Tasks globals
 void TaskBlinkRed( void *pvParameters );
@@ -292,11 +291,6 @@ void TaskMovementMonitoring(void *pvParameters){
 //---------MAIN LOOP-----------//
   while (true) {
 
-    // REMOVE----------------------------  ????
-    digitalWrite (RED_LED, LOW);
-    digitalWrite (GRN_LED, LOW);
-    //-----------------------------------
-
     // Read all the pixels
     amg.readPixels(pixels);
 
@@ -330,8 +324,10 @@ void TaskMovementMonitoring(void *pvParameters){
           rightFlag = false;
         } else {
           if (a-b > hysteres) {
-          digitalWrite (GRN_LED, HIGH);
-          leftFlag = true;
+            digitalWrite (GRN_LED, HIGH);
+            leftFlag = true;
+          } else {
+            digitalWrite (GRN_LED, LOW);
           }
         }
     } else if ((b>a)) {    // check right block
@@ -340,8 +336,10 @@ void TaskMovementMonitoring(void *pvParameters){
         leftFlag = false;
       } else {
         if (b-a > hysteres) {
-        digitalWrite (RED_LED, HIGH);
-        rightFlag = true;
+          digitalWrite (RED_LED, HIGH);
+          rightFlag = true;
+        } else {
+          digitalWrite (RED_LED, LOW);
         }
       }
     }
