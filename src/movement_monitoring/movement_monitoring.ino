@@ -79,8 +79,6 @@ int flagLoopLimit = 50; // How many spins the loop can go with a flag set, waiti
 int inRoom = 1;  // number of people in the room from the begining. Should be zero but in test case I am in the room
 
 // Tasks globals
-void TaskBlinkRed( void *pvParameters );
-void TaskBlinkGrn( void *pvParameters );
 void TaskSniffPackets( void *pvParameters );
 void TaskMqttWifi(void *pvParameters);
 void TaskMovementMonitoring(void *pvParameters);
@@ -98,28 +96,6 @@ void setup() {
   pinMode(GRN_LED, OUTPUT);
 
   //------Tasks setup-----------//
-
-  /*
-  uint32_t blink_delay = 1000; // Delay between changing state on LED pin
-  xTaskCreate(
-    TaskBlinkRed
-    ,  "Task Blink Red" // A name just for humans
-    ,  1024        // The stack size can be checked by calling `uxHighWaterMark = uxTaskGetStackHighWaterMark(NULL);`
-    ,  (void*) &blink_delay // Task parameter which can modify the task behavior. This must be passed as pointer to void.
-    ,  1  // Priority
-    ,  NULL // Task handle is not used here - simply pass NULL
-    );
-
-  xTaskCreate(
-    TaskBlinkGrn
-    ,  "Green blink"
-    ,  1024  // Stack size
-    ,  NULL  // When no parameter is used, simply pass NULL
-    ,  2  // Priority
-    ,  NULL // With task handle we will be able to manipulate with this task.
-    );
-    */
-
   xTaskCreatePinnedToCore(
     TaskSniffPackets
     ,  "PACKET SNIFFER"
@@ -170,34 +146,6 @@ void loop(){
 /*---------------------- Tasks ----------------------------------------------*/
 //----------------------------------------------------------------------------//
 
-void TaskBlinkRed(void *pvParameters){  // This is a task.
-  uint32_t blink_delay = *((uint32_t*)pvParameters);
-
-  while (true){ // A Task shall never return or exit.
-    digitalWrite(RED_LED, HIGH);   // turn the LED on (HIGH is the voltage level)
-    // arduino-esp32 has FreeRTOS configured to have a tick-rate of 1000Hz and portTICK_PERIOD_MS
-    // refers to how many milliseconds the period between each ticks is, ie. 1ms.
-    delay(blink_delay);
-    digitalWrite(RED_LED, LOW);    // turn the LED off by making the voltage LOW
-    delay(blink_delay);
-  }
-}
-
-
-
-void TaskBlinkGrn(void *pvParameters){ 
-  (void) pvParameters;
-
-  while (true){ // A Task shall never return or exit.
-    digitalWrite(GRN_LED, HIGH);   
-    delay(300);
-    digitalWrite(GRN_LED, LOW);    
-    delay(300);
-  }
-}
-
-
-
 void TaskSniffPackets(void *pvParameters){ 
   (void) pvParameters;
 //---------SETUP-----------//
@@ -240,7 +188,6 @@ void TaskSniffPackets(void *pvParameters){
     if(curChannel > maxCh){ 
       curChannel = 1;
     }
-    Serial.println("In room: " + String(inRoom));  // REMOVER OR MOVE --------------------------
     esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
     delay(1000);
     if (verboseOutput) {
@@ -292,15 +239,15 @@ void TaskLedIndication(void *pvParameters){
   while (true){
     
     if (inRoom > oldInRoom) {  // blink green if someone enters
-      digitalWrite(GRN_LED, HIGH);   
-      delay(300);
+      digitalWrite(GRN_LED, HIGH); 
+      Serial.println("MOVEMENT MONITORING: In room: " + String(inRoom));  
+      delay(100);
       digitalWrite(GRN_LED, LOW);    
-      delay(300);
     } else if (inRoom < oldInRoom) {  // blink red if someone leaves
-      digitalWrite(RED_LED, HIGH);   
-      delay(300);
+      digitalWrite(RED_LED, HIGH);
+      Serial.println("MOVEMENT MONITORING: In room: " + String(inRoom)); 
+      delay(100);
       digitalWrite(RED_LED, LOW);    
-      delay(300);
     }
     oldInRoom = inRoom;
     delay(100);
