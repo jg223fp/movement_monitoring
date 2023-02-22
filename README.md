@@ -37,8 +37,7 @@ Technique used for monitoring visitor flows is wanted for various areas. This pr
 
 - Add images to readme
 - Add delays betwwen tasks during boot
-- Add blink with leds for erros or when someone enters or leaves the room
-- Add mqtt publish for number in room
+- Add blink with leds for erros
 - Change init for sniffer to 2 instead of 0
 - Add protection for movement miontoring so it cant be -1 in the count
 - create printout task that prints the statuses instead of mqtt wifi task doing it.

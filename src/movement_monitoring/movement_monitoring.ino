@@ -17,7 +17,7 @@
 #define GRN_LED 26
 
 // Wifi packet sniffer
-#define initScanTimes 2 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
+#define initScanTimes 0 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
 #define maxCh 13 //max Channel EU = 13
 #define macLimit 128 // maximum number of macs that the controller can store
 
@@ -84,6 +84,7 @@ void TaskBlinkGrn( void *pvParameters );
 void TaskSniffPackets( void *pvParameters );
 void TaskMqttWifi(void *pvParameters);
 void TaskMovementMonitoring(void *pvParameters);
+void TaskLedIndication(void *pvParameters);
 
 
 /*---------------------- Setup ----------------------------------------------*/
@@ -135,6 +136,16 @@ void setup() {
     ,  2048  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
     ,  3  // Priority
+    ,  NULL // With task handle we will be able to manipulate with this task.
+    ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
+    );
+
+    xTaskCreatePinnedToCore(
+    TaskLedIndication
+    ,  "LED indication"
+    ,  2048  // Stack size
+    ,  NULL  // When no parameter is used, simply pass NULL
+    ,  1  // Priority
     ,  NULL // With task handle we will be able to manipulate with this task.
     ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
     );
@@ -274,6 +285,29 @@ void TaskMqttWifi(void *pvParameters){
 }
 
 
+void TaskLedIndication(void *pvParameters){ 
+  (void) pvParameters;
+
+  int oldInRoom = 0;
+  while (true){
+    
+    if (inRoom > oldInRoom) {  // blink green if someone enters
+      digitalWrite(GRN_LED, HIGH);   
+      delay(300);
+      digitalWrite(GRN_LED, LOW);    
+      delay(300);
+    } else if (inRoom < oldInRoom) {  // blink red if someone leaves
+      digitalWrite(RED_LED, HIGH);   
+      delay(300);
+      digitalWrite(RED_LED, LOW);    
+      delay(300);
+    }
+    oldInRoom = inRoom;
+    delay(100);
+  }
+}
+
+
 void TaskMovementMonitoring(void *pvParameters){ 
   (void) pvParameters;
 
@@ -322,12 +356,12 @@ void TaskMovementMonitoring(void *pvParameters){
           inRoom = inRoom - 1;
           rightFlag = false;
         } else {
-          digitalWrite (GRN_LED, HIGH);
-          digitalWrite (RED_LED, LOW);
+          //digitalWrite (GRN_LED, HIGH);   // LEDS are commented out in the movement sencing for permormance gain.
+          //digitalWrite (RED_LED, LOW);    // Uncomment them to look for background noice and sensor borders
           leftFlag = true;
           } 
       } else {
-          digitalWrite (GRN_LED, LOW);
+          //digitalWrite (GRN_LED, LOW);
       }
         
     } else if ((b>a)) {    // check right block
@@ -336,12 +370,12 @@ void TaskMovementMonitoring(void *pvParameters){
           inRoom = inRoom + 1;
           leftFlag = false;
         } else {
-          digitalWrite (RED_LED, HIGH);
-          digitalWrite (GRN_LED, LOW);
+        //  digitalWrite (RED_LED, HIGH);
+        //  digitalWrite (GRN_LED, LOW);
           rightFlag = true;
           } 
       } else {
-          digitalWrite (RED_LED, LOW);
+         // digitalWrite (RED_LED, LOW);
       }
     }
 
