@@ -96,7 +96,6 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
       maclist[listIndex][0] = mac;
       maclist[listIndex][1] = defaultTTL;
       listIndex ++;
-      macCount ++;
       if(listIndex >= macLimit) { 
         Serial.println("Too many addresses, reseting list index");
         listIndex = 0;
@@ -107,13 +106,14 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
 
 // check if TTL is over 0. if not, the mac is removed from the array
 void checkTtl(){ 
+  int tempMacCount = 0;
   for(int i=0;i<=macLimit;i++) {
     if(!(maclist[i][0] == "")){
+      tempMacCount ++;
       int ttl = (maclist[i][1].toInt());
       ttl --;
       if(ttl <= 0) {
         maclist[i][0] = "";
-        macCount --;
         if (verboseOutput) {
           Serial.println("1 adress removed");
         }
@@ -122,6 +122,7 @@ void checkTtl(){
       }
     }
   }
+  macCount = tempMacCount;
 }
 
 // Prints the time left of the devices TTL

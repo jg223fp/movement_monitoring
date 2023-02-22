@@ -15,7 +15,7 @@
 #define GRN_LED 26
 
 // Wifi packet sniffer
-#define initScanTimes 2 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
+#define initScanTimes 1 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
 #define maxCh 13 //max Channel EU = 13
 #define macLimit 128 // maximum number of macs that the controller can store
 
@@ -254,7 +254,6 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
       maclist[listIndex][0] = mac;
       maclist[listIndex][1] = defaultTTL;
       listIndex ++;
-      macCount ++;
       if(listIndex >= macLimit) { 
         Serial.println("PACKET SNIFFER: Too many addresses, reseting list index");
         listIndex = 0;
@@ -265,13 +264,14 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
 
 // check if TTL is over 0. if not, the mac is removed from the array
 void checkTtl(){ 
+  int tempMacCount = 0;
   for(int i=0;i<=macLimit;i++) {
     if(!(maclist[i][0] == "")){
+      tempMacCount ++;
       int ttl = (maclist[i][1].toInt());
       ttl --;
       if(ttl <= 0) {
         maclist[i][0] = "";
-        macCount --;
         if (verboseOutput) {
           Serial.println("PACKET SNIFFER: 1 adress removed");
         }
@@ -280,6 +280,7 @@ void checkTtl(){
       }
     }
   }
+  macCount = tempMacCount;
 }
 
 // Prints the time left of the devices TTL
