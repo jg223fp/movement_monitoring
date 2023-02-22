@@ -61,7 +61,8 @@ const char* password = "berlin2022";                  // try to move to def
 const char* mqtt_server = "io.adafruit.com";          // try to move to def
 const int mqttPort = 1883;                            // try to move to def
 String clientId = "movement_sensor_box";              // try to move to def
-const char* mqttTopic = "jg223fp/feeds/Dayli_flow";   // try to move to def
+const char* mqttTopicMacs = "jg223fp/feeds/mac_addresses_in_area";   // try to move to def
+const char* mqttTopicInRoom = "jg223fp/feeds/people_in_room";   // try to move to def
 WiFiClient espClient;
 PubSubClient client(espClient);
 float temperature = 0;    // REMOVE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -97,6 +98,8 @@ void setup() {
   pinMode(GRN_LED, OUTPUT);
 
   //------Tasks setup-----------//
+
+  /*
   uint32_t blink_delay = 1000; // Delay between changing state on LED pin
   xTaskCreate(
     TaskBlinkRed
@@ -115,6 +118,7 @@ void setup() {
     ,  2  // Priority
     ,  NULL // With task handle we will be able to manipulate with this task.
     );
+    */
 
   xTaskCreatePinnedToCore(
     TaskSniffPackets
@@ -131,19 +135,18 @@ void setup() {
     ,  "Mqtt & wifi"
     ,  2048  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
-    ,  4  // Priority
+    ,  3  // Priority
     ,  NULL // With task handle we will be able to manipulate with this task.
     ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
     );
 
-    xTaskCreatePinnedToCore(
+    xTaskCreate(
     TaskMovementMonitoring
     ,  "Movement monitoring"
     ,  2048  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
     ,  7  // Priority
     ,  NULL // With task handle we will be able to manipulate with this task.
-    ,  ARDUINO_RUNNING_CORE1 // Core on which the task will run
     );
 
 }
@@ -228,7 +231,7 @@ void TaskSniffPackets(void *pvParameters){
     if(curChannel > maxCh){ 
       curChannel = 1;
     }
-    Serial.println("in room: " + String(inRoom));
+    Serial.println("In room: " + String(inRoom));  // REMOVER OR MOVE --------------------------
     esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
     delay(1000);
     if (verboseOutput) {
@@ -263,8 +266,12 @@ void TaskMqttWifi(void *pvParameters){
       // Convert the value to a char array
       char macString[8];
       dtostrf(macCount, 1, 2, macString);
-      client.publish(mqttTopic, macString);
-      Serial.println("MQTT&WIFI: Published macCount");
+      char inRoomString[8];
+      dtostrf(inRoom, 1, 2, inRoomString);
+
+      client.publish(mqttTopicMacs, macString);
+      client.publish(mqttTopicInRoom, inRoomString);
+      Serial.println("MQTT&WIFI: Published macCount & inRoom");
     }   
   }
 }
@@ -284,6 +291,12 @@ void TaskMovementMonitoring(void *pvParameters){
 
 //---------MAIN LOOP-----------//
   while (true) {
+
+    // REMOVE----------------------------  ????
+    digitalWrite (RED_LED, LOW);
+    digitalWrite (GRN_LED, LOW);
+    //-----------------------------------
+
     // Read all the pixels
     amg.readPixels(pixels);
 
@@ -317,7 +330,7 @@ void TaskMovementMonitoring(void *pvParameters){
           rightFlag = false;
         } else {
           if (a-b > hysteres) {
-          digitalWrite (26,HIGH);
+          digitalWrite (GRN_LED, HIGH);
           leftFlag = true;
           }
         }
@@ -327,7 +340,7 @@ void TaskMovementMonitoring(void *pvParameters){
         leftFlag = false;
       } else {
         if (b-a > hysteres) {
-        digitalWrite (25,HIGH);
+        digitalWrite (RED_LED, HIGH);
         rightFlag = true;
         }
       }

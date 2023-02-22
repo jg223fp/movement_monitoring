@@ -36,7 +36,11 @@ Technique used for monitoring visitor flows is wanted for various areas. This pr
 ## Todos
 
 - Add images to readme
-- Get mqtt working
+- Add delays betwwen tasks during boot
+- Add blink with leds for erros or when someone enters or leaves the room
+- Add mqtt publish for number in room
+- Change init for sniffer to 2 instead of 0
+- Add protection for movement miontoring so it cant be -1 in the count
 
 ## LoPy
 1. While pins G23 and GND are shorted, reset the LoPy.
