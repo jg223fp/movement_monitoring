@@ -74,7 +74,7 @@ float b = 0;   // right block
 bool leftFlag = false;
 bool rightFlag = false;
 int loopsWithFlag = 0;   // Number of spins with a flag set. Counting variable. Can not be adjusted.
-float hysteres = 0.5;  // Higher gives less sensitivity, lower more noise   0.4 is best so far
+float hysteres = 0.4;  // Higher gives less sensitivity, lower more noise   0.4 is best so far
 int flagLoopLimit = 15; // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
 int inRoom = 1;  // number of people in the room from the begining. Should be zero but in test case I am in the room
 
@@ -189,7 +189,6 @@ void TaskBlinkGrn(void *pvParameters){
 
 void TaskSniffPackets(void *pvParameters){ 
   (void) pvParameters;
-
 //---------SETUP-----------//
 // setup wifi for sniffing
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -246,7 +245,6 @@ void TaskSniffPackets(void *pvParameters){
 
 void TaskMqttWifi(void *pvParameters){ 
   (void) pvParameters;
-
   //---------SETUP-----------//
   connectWifi();
 
@@ -319,24 +317,26 @@ void TaskMovementMonitoring(void *pvParameters){
 
     // check left block
     if (a>b) {
-      if(rightFlag) {
+      if(rightFlag && a-b > hysteres) {
           inRoom = inRoom - 1;
           rightFlag = false;
         } else {
           if (a-b > hysteres) {
             digitalWrite (GRN_LED, HIGH);
+            digitalWrite (RED_LED, LOW);
             leftFlag = true;
           } else {
             digitalWrite (GRN_LED, LOW);
           }
         }
     } else if ((b>a)) {    // check right block
-      if(leftFlag) {
+      if(leftFlag && b-a > hysteres) {
         inRoom = inRoom + 1;
         leftFlag = false;
       } else {
         if (b-a > hysteres) {
           digitalWrite (RED_LED, HIGH);
+          digitalWrite (GRN_LED, LOW);
           rightFlag = true;
         } else {
           digitalWrite (RED_LED, LOW);
