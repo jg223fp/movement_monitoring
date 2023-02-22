@@ -107,14 +107,13 @@ void setup() {
     ,  NULL // Task handle is not used here - simply pass NULL
     );
 
-  xTaskCreatePinnedToCore(
+  xTaskCreate(
     TaskBlinkGrn
     ,  "Green blink"
     ,  1024  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
     ,  2  // Priority
     ,  NULL // With task handle we will be able to manipulate with this task.
-    ,  ARDUINO_RUNNING_CORE1 // Core on which the task will run
     );
 
   xTaskCreatePinnedToCore(
@@ -229,6 +228,7 @@ void TaskSniffPackets(void *pvParameters){
     if(curChannel > maxCh){ 
       curChannel = 1;
     }
+    Serial.println("in room: " + String(inRoom));
     esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
     delay(1000);
     if (verboseOutput) {
@@ -274,10 +274,68 @@ void TaskMovementMonitoring(void *pvParameters){
   (void) pvParameters;
 
 //---------SETUP---------------//
-
+  bool status;  
+  status = amg.begin();
+  if (!status) {
+      Serial.println("MOVEMENT MONITORING: ERROR: Could not find a valid AMG88xx sensor, check wiring!");
+      while (1);
+  }
+  delay(100); // let sensor boot up
 
 //---------MAIN LOOP-----------//
-  while (true){
+  while (true) {
+    // Read all the pixels
+    amg.readPixels(pixels);
+
+    // 16 pixels: the two rows in the middle on each side
+    for (int i=2; i<=63; i=i+8) {
+      a = a + pixels[i];
+      a = a + pixels[i+1];
+      b = b + pixels[i+2];
+      b = b + pixels[i+3];
+    }
+
+    //obtain average value for each block
+    a = (a/16);
+    b = (b/16);
+
+// check how many spins a flag has been raised. If nothing happens, reset the flags
+    if (leftFlag || rightFlag) {
+      loopsWithFlag += 1;
+
+      if (loopsWithFlag > flagLoopLimit) {
+      leftFlag = false;
+      rightFlag = false;
+      loopsWithFlag = 0;
+      }
+    }
+
+    // check left block
+    if (a>b) {
+      if(rightFlag) {
+          inRoom = inRoom - 1;
+          rightFlag = false;
+        } else {
+          if (a-b > hysteres) {
+          digitalWrite (26,HIGH);
+          leftFlag = true;
+          }
+        }
+    } else if ((b>a)) {    // check right block
+      if(leftFlag) {
+        inRoom = inRoom + 1;
+        leftFlag = false;
+      } else {
+        if (b-a > hysteres) {
+        digitalWrite (25,HIGH);
+        rightFlag = true;
+        }
+      }
+    }
+
+  // reset block sums
+    a = 0;
+    b = 0;
   
   }
 }
