@@ -75,7 +75,7 @@ bool leftFlag = false;
 bool rightFlag = false;
 int loopsWithFlag = 0;   // Number of spins with a flag set. Counting variable. Can not be adjusted.
 float hysteres = 0.4;  // Higher gives less sensitivity, lower more noise   0.4 is best so far
-int flagLoopLimit = 15; // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
+int flagLoopLimit = 40; // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
 int inRoom = 1;  // number of people in the room from the begining. Should be zero but in test case I am in the room
 
 // Tasks globals
@@ -317,30 +317,31 @@ void TaskMovementMonitoring(void *pvParameters){
 
     // check left block
     if (a>b) {
-      if(rightFlag && a-b > hysteres) {
+      if(a-b > hysteres) {
+        if (rightFlag) {
           inRoom = inRoom - 1;
           rightFlag = false;
         } else {
-          if (a-b > hysteres) {
-            digitalWrite (GRN_LED, HIGH);
-            digitalWrite (RED_LED, LOW);
-            leftFlag = true;
-          } else {
-            digitalWrite (GRN_LED, LOW);
-          }
-        }
-    } else if ((b>a)) {    // check right block
-      if(leftFlag && b-a > hysteres) {
-        inRoom = inRoom + 1;
-        leftFlag = false;
+          digitalWrite (GRN_LED, HIGH);
+          digitalWrite (RED_LED, LOW);
+          leftFlag = true;
+          } 
       } else {
-        if (b-a > hysteres) {
+          digitalWrite (GRN_LED, LOW);
+      }
+        
+    } else if ((b>a)) {    // check right block
+      if(b-a > hysteres) {
+        if (leftFlag) {
+          inRoom = inRoom + 1;
+          leftFlag = false;
+        } else {
           digitalWrite (RED_LED, HIGH);
           digitalWrite (GRN_LED, LOW);
           rightFlag = true;
-        } else {
+          } 
+      } else {
           digitalWrite (RED_LED, LOW);
-        }
       }
     }
 
