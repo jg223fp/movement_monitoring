@@ -4,6 +4,7 @@
 #include <Wire.h>
 #include "esp_wifi.h"
 #include <PubSubClient.h>
+#include <Adafruit_AMG88xx.h>
 
 /*---------------------- Definitions ----------------------------------------------*/
 //----------------------------------------------------------------------------//
@@ -16,13 +17,14 @@
 #define GRN_LED 26
 
 // Wifi packet sniffer
-#define initScanTimes 1 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
+#define initScanTimes 0 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
 #define maxCh 13 //max Channel EU = 13
 #define macLimit 128 // maximum number of macs that the controller can store
 
 // Mqtt & wifi
 #define IO_USERNAME  "jg223fp"
 #define IO_KEY       "aio_pHcJ80PKSkjPHgfLR486iaNrdY6m"
+
 
 /*---------------------- Globals ----------------------------------------------*/
 //----------------------------------------------------------------------------//
@@ -64,11 +66,24 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 float temperature = 0;    // REMOVE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-// tasks globals
+// Movement monitoring globals
+Adafruit_AMG88xx amg;
+float pixels[64];
+float a = 0;   // left block
+float b = 0;   // right block
+bool leftFlag = false;
+bool rightFlag = false;
+int loopsWithFlag = 0;   // Number of spins with a flag set. Counting variable. Can not be adjusted.
+float hysteres = 0.5;  // Higher gives less sensitivity, lower more noise   0.4 is best so far
+int flagLoopLimit = 15; // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
+int inRoom = 0;
+
+// Tasks globals
 void TaskBlinkRed( void *pvParameters );
 void TaskBlinkGrn( void *pvParameters );
 void TaskSniffPackets( void *pvParameters );
 void TaskMqttWifi(void *pvParameters);
+void TaskMovementMonitoring(void *pvParameters);
 
 
 /*---------------------- Setup ----------------------------------------------*/
@@ -120,6 +135,16 @@ void setup() {
     ,  4  // Priority
     ,  NULL // With task handle we will be able to manipulate with this task.
     ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
+    );
+
+    xTaskCreatePinnedToCore(
+    TaskMovementMonitoring
+    ,  "Movement monitoring"
+    ,  2048  // Stack size
+    ,  NULL  // When no parameter is used, simply pass NULL
+    ,  7  // Priority
+    ,  NULL // With task handle we will be able to manipulate with this task.
+    ,  ARDUINO_RUNNING_CORE1 // Core on which the task will run
     );
 
 }
@@ -227,21 +252,36 @@ void TaskMqttWifi(void *pvParameters){
   while(true){
     if (WiFi.status() != WL_CONNECTED) {
     connectWifi();
-    }
-    if (!client.connected()) {
+
+    } else if (!client.connected()) {
       connectMqtt();
-    }
-    client.loop();
 
-    delay(10000);
-    // Convert the value to a char array
-    char macString[8];
-    dtostrf(macCount, 1, 2, macString);
-    client.publish(mqttTopic, macString);
-    Serial.println("MQTT&WIFI: Published macCount");
+    } else {
+      client.loop();
+      delay(10000);
+      // publish
+      // Convert the value to a char array
+      char macString[8];
+      dtostrf(macCount, 1, 2, macString);
+      client.publish(mqttTopic, macString);
+      Serial.println("MQTT&WIFI: Published macCount");
+    }   
   }
-
 }
+
+
+void TaskMovementMonitoring(void *pvParameters){ 
+  (void) pvParameters;
+
+//---------SETUP---------------//
+
+
+//---------MAIN LOOP-----------//
+  while (true){
+  
+  }
+}
+
 
 /*---------------------- Functions ----------------------------------------------*/
 //----------------------------------------------------------------------------//
