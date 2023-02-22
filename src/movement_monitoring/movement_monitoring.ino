@@ -3,6 +3,7 @@
 #include <WiFi.h>
 #include <Wire.h>
 #include "esp_wifi.h"
+#include <PubSubClient.h>
 
 /*---------------------- Definitions ----------------------------------------------*/
 //----------------------------------------------------------------------------//
@@ -10,7 +11,7 @@
 #define ARDUINO_RUNNING_CORE0 0
 #define ARDUINO_RUNNING_CORE1 1
 
-//pins
+// Pins
 #define RED_LED 25
 #define GRN_LED 26
 
@@ -18,6 +19,10 @@
 #define initScanTimes 1 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
 #define maxCh 13 //max Channel EU = 13
 #define macLimit 128 // maximum number of macs that the controller can store
+
+// Mqtt & wifi
+#define IO_USERNAME  "jg223fp"
+#define IO_KEY       "aio_pHcJ80PKSkjPHgfLR486iaNrdY6m"
 
 /*---------------------- Globals ----------------------------------------------*/
 //----------------------------------------------------------------------------//
@@ -31,7 +36,7 @@ String defaultTTL = "60"; // Elapsed time before device is consirded offline and
 int initCount = 0;      // how many macs there are in init list
 String initList[50];    // array used to store macs found under the initiation
 bool initActive = true;  // tells program that initiation should be run.
-bool verboseOutput = true; // change to true to get more info
+bool verboseOutput = false; // change to true to get more info
 const wifi_promiscuous_filter_t filt={ 
     .filter_mask=WIFI_PROMIS_FILTER_MASK_MGMT|WIFI_PROMIS_FILTER_MASK_DATA
 };
@@ -48,10 +53,24 @@ typedef struct {
   unsigned char payload[];
 } __attribute__((packed)) WifiMgmtHdr;
 
+// Mqtt & wifi globals
+const char* ssid = "3807444";                         // try to move to def
+const char* password = "berlin2022";                  // try to move to def
+const char* mqtt_server = "io.adafruit.com";          // try to move to def
+const int mqttPort = 1883;                            // try to move to def
+String clientId = "movement_sensor_box";              // try to move to def
+const char* mqttTopic = "jg223fp/feeds/Dayli_flow";   // try to move to def
+WiFiClient espClient;
+PubSubClient client(espClient);
+long lastMsg = 0;
+char msg[50];
+float temperature = 0;    // REMOVE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 // tasks globals
 void TaskBlinkRed( void *pvParameters );
 void TaskBlinkGrn( void *pvParameters );
 void TaskSniffPackets( void *pvParameters );
+void TaskMqttWifi(void *pvParameters);
 
 
 /*---------------------- Setup ----------------------------------------------*/
@@ -91,6 +110,16 @@ void setup() {
     ,  2048  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
     ,  5  // Priority
+    ,  NULL // With task handle we will be able to manipulate with this task.
+    ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
+    );
+
+    xTaskCreatePinnedToCore(
+    TaskMqttWifi
+    ,  "Mqtt & wifi"
+    ,  2048  // Stack size
+    ,  NULL  // When no parameter is used, simply pass NULL
+    ,  4  // Priority
     ,  NULL // With task handle we will be able to manipulate with this task.
     ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
     );
@@ -188,6 +217,20 @@ void TaskSniffPackets(void *pvParameters){
     Serial.println();
     curChannel++;
   }
+}
+
+
+void TaskMqttWifi(void *pvParameters){ 
+  (void) pvParameters;
+
+  //---------SETUP-----------//
+  connectWifi();
+
+
+  while(true){
+    delay(2000);
+  }
+
 }
 
 /*---------------------- Functions ----------------------------------------------*/
@@ -292,3 +335,26 @@ void printTime(){
     }
   }
 }
+//------------------------------------------------------------------//
+
+//-----Mqtt & wifi functions------//
+void connectWifi() {
+  delay(10);
+  Serial.println();
+  Serial.print("MQTT&WIFI: Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("MQTT&WIFI: WiFi connected");
+  Serial.println("MQTT&WIFI: IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+//------------------------------------------------------------------//
