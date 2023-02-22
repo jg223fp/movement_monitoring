@@ -223,7 +223,7 @@ void TaskMqttWifi(void *pvParameters){
   //---------SETUP-----------//
   connectWifi();
 
-
+  //---------MAIN LOOP-----------//
   while(true){
     if (WiFi.status() != WL_CONNECTED) {
     connectWifi();
@@ -233,7 +233,7 @@ void TaskMqttWifi(void *pvParameters){
     }
     client.loop();
 
-    delay(5000);
+    delay(10000);
     // Convert the value to a char array
     char macString[8];
     dtostrf(macCount, 1, 2, macString);
