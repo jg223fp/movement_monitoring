@@ -24,6 +24,7 @@
 // Mqtt & wifi
 #define IO_USERNAME  "jg223fp"
 #define IO_KEY       "aio_pHcJ80PKSkjPHgfLR486iaNrdY6m"
+#define MQTT_PUBLISH_INTERVAL 10000 // Every x millisecond
 
 
 /*---------------------- Globals ----------------------------------------------*/
@@ -56,8 +57,8 @@ typedef struct {
 } __attribute__((packed)) WifiMgmtHdr;
 
 // Mqtt & wifi globals
-const char* ssid = "3807444";                         // try to move to def
-const char* password = "berlin2022";                  // try to move to def
+const char* ssid = "AndroidAP";                         // try to move to def
+const char* password = "keaf1188";                  // try to move to def
 const char* mqtt_server = "io.adafruit.com";          // try to move to def
 const int mqttPort = 1883;                            // try to move to def
 String clientId = "movement_sensor_box";              // try to move to def
@@ -216,7 +217,6 @@ void TaskMqttWifi(void *pvParameters){
 
     } else {
       client.loop();
-      delay(10000);
       // publish
       // Convert the value to a char array
       char macString[8];
@@ -227,6 +227,9 @@ void TaskMqttWifi(void *pvParameters){
       client.publish(mqttTopicMacs, macString);
       client.publish(mqttTopicInRoom, inRoomString);
       Serial.println("MQTT&WIFI: Published macCount & inRoom");
+      delay(2000);        // Needed for packets to be sent
+      WiFi.disconnect();  // disconnect to save battery power
+      delay(MQTT_PUBLISH_INTERVAL);
     }   
   }
 }
