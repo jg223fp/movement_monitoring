@@ -17,7 +17,7 @@
 #define GRN_LED 26
 
 // Wifi packet sniffer
-#define initScanTimes 0 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
+#define initScanTimes 2 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
 #define maxCh 13 //max Channel EU = 13
 #define macLimit 128 // maximum number of macs that the controller can store
 
@@ -61,8 +61,8 @@ typedef struct {
 } __attribute__((packed)) WifiMgmtHdr;
 
 // Mqtt & wifi globals
-const char* ssid = "AndroidAP";             
-const char* password = "keaf1188";   
+const char* ssid = "3807444";             
+const char* password = "berlin2022";   
 const char* mqtt_server = "io.adafruit.com";  
 const int mqttPort = 1883;
 String clientId = "movement_sensor_box";
@@ -128,11 +128,12 @@ void setup() {
     ,  NULL // With task handle we will be able to manipulate with this task.
     ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
     );
-
-  while (initActive) {
-    // wait for sniffer init to finisg before start publishing task
-  }
   
+  while (initActive) {
+  // wait for sniffer init to finisg before start publishing task
+  delay(1000);
+  } 
+
   xTaskCreatePinnedToCore(
     TaskMqttWifi
     ,  "Mqtt & wifi"
@@ -142,8 +143,6 @@ void setup() {
     ,  NULL // With task handle we will be able to manipulate with this task.
     ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
     );
-
-  
 }
 
 /*---------------------- Main loop ----------------------------------------------*/
@@ -230,7 +229,6 @@ This makes it possible to disconnect the wifi in between useage to save power.
 void TaskMqttWifi(void *pvParameters){ 
   (void) pvParameters;
   //---------SETUP-----------//
-
   connectWifi();
 
   //---------MAIN LOOP-----------//
