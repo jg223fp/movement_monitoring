@@ -61,13 +61,13 @@ typedef struct {
 } __attribute__((packed)) WifiMgmtHdr;
 
 // Mqtt & wifi globals
-const char* ssid = "AndroidAP";                         // try to move to def
-const char* password = "keaf1188";                  // try to move to def
-const char* mqtt_server = "io.adafruit.com";          // try to move to def
-const int mqttPort = 1883;                            // try to move to def
-String clientId = "movement_sensor_box";              // try to move to def
-const char* mqttTopicMacs = "jg223fp/feeds/mac_addresses_in_area";   // try to move to def
-const char* mqttTopicInRoom = "jg223fp/feeds/people_in_room";   // try to move to def
+const char* ssid = "AndroidAP";             
+const char* password = "keaf1188";   
+const char* mqtt_server = "io.adafruit.com";  
+const int mqttPort = 1883;
+String clientId = "movement_sensor_box";
+const char* mqttTopicMacs = "jg223fp/feeds/mac_addresses_in_area";
+const char* mqttTopicInRoom = "jg223fp/feeds/people_in_room";
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -482,9 +482,7 @@ void printTime(){
 // Connects to a WiFi network.
 void connectWifi() {
   delay(10);
-  Serial.println();
-  Serial.print("MQTT&WIFI: Connecting to ");
-  Serial.println(ssid);
+  Serial.println("MQTT&WIFI: Connecting to " + String(ssid));
 
   WiFi.begin(ssid, password);
 
@@ -494,7 +492,7 @@ void connectWifi() {
   }
 
   Serial.println("MQTT&WIFI: WiFi connected");
-  Serial.println("MQTT&WIFI: IP address: ");
+  Serial.print("MQTT&WIFI: IP address: ");
   Serial.println(WiFi.localIP());
 }
 
@@ -503,12 +501,12 @@ void connectMqtt() {
   client.setServer(mqtt_server, mqttPort);
   // Loop until we're reconnected
   while (!client.connected()) {
-    Serial.print("MQTT&WIFI: Attempting MQTT connection...");
+    Serial.println("MQTT&WIFI: Attempting MQTT connection...");
     // Attempt to connect
     if (client.connect(clientId.c_str(), IO_USERNAME, IO_KEY)) {
             Serial.println("MQTT&WIFI: Mqtt connected");
     } else {
-      Serial.print(" MQTT&WIFI: failed, rc=");
+      Serial.println(" MQTT&WIFI: failed, rc=");
       Serial.print(client.state());
       Serial.println("MQTT&WIFI: try again in 5 seconds");
       // Wait 5 seconds before retrying
