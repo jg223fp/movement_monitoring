@@ -26,6 +26,10 @@
 #define IO_KEY       "aio_pHcJ80PKSkjPHgfLR486iaNrdY6m"
 #define MQTT_PUBLISH_INTERVAL 10000 // Every x millisecond
 
+// Movement monitoring
+#define HYSTERES 0.5  // Higher gives less sensitivity, lower more noise   0.4 is best so far
+#define FLAG_LOOP_LIMIT 50 // How many spins the loop can go with a flag set, waiting for a human to enter the other block. // depends on human speed and microcontroller speed
+
 
 /*---------------------- Globals ----------------------------------------------*/
 //----------------------------------------------------------------------------//
@@ -75,8 +79,6 @@ float b = 0;   // right block
 bool leftFlag = false;
 bool rightFlag = false;
 int loopsWithFlag = 0;   // Number of spins with a flag set. Counting variable. Can not be adjusted.
-float hysteres = 0.5;  // Higher gives less sensitivity, lower more noise   0.4 is best so far
-int flagLoopLimit = 50; // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
 int inRoom = 1;  // number of people in the room from the begining. Should be zero but in test case I am in the room
 
 // Tasks globals
@@ -92,6 +94,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Movement monitor boot");
   Serial.println("Starting tasks...");
+
   //------Pin setup-----------//
   pinMode(RED_LED, OUTPUT);
   pinMode(GRN_LED, OUTPUT);
@@ -141,12 +144,22 @@ void setup() {
 /*---------------------- Main loop ----------------------------------------------*/
 //----------------------------------------------------------------------------//
 void loop(){
-
+  // Everything is running in the tasks
 }
 
 /*---------------------- Tasks ----------------------------------------------*/
 //----------------------------------------------------------------------------//
 
+/*
+Sniffing task
+Sniffs wifi packets and retrives the mac address from the packets sender.
+Every macaddress gets a ttl. When the ttl is out the addres i dropped.
+Every time the address is seen the ttl is reseted.
+This makes it possible to estimate how many devices is around (humans).
+The task first runs an initiation to record macaddresses that is already in the area (background noice).
+For how long can be toggled on the definition "INIT_SCAN_TIMES".
+The device should preferably run the initiation for say ten minutes when no one is in its suroundings.
+*/
 void TaskSniffPackets(void *pvParameters){ 
   (void) pvParameters;
 //---------SETUP-----------//
@@ -202,6 +215,13 @@ void TaskSniffPackets(void *pvParameters){
 }
 
 
+/*
+Cloud service
+Connects to Wifi then connects to MQTT.
+When connections are succefful it publishes the data to the cloud.
+The publishing intervall can be toggled by the definition "MQTT_PUBLISH_INTERVAL".
+This makes it possible to disconnect the wifi in between useage to save power.
+*/
 void TaskMqttWifi(void *pvParameters){ 
   (void) pvParameters;
   //---------SETUP-----------//
@@ -234,7 +254,11 @@ void TaskMqttWifi(void *pvParameters){
   }
 }
 
-
+/*
+Led indication for sencing of humans.
+Blinks red when someone enters the room.
+Blinks green when someone leaves the room.
+*/
 void TaskLedIndication(void *pvParameters){ 
   (void) pvParameters;
 
@@ -258,6 +282,17 @@ void TaskLedIndication(void *pvParameters){
 }
 
 
+/*
+Movement monitoring with AMG8833.
+Uses the 16 pixels in the middle and devides them into two block.
+Then looks at the difference in avergae temperature between the blocks and in what order the blocks 
+have a higher average temperature. By this it can tell in what direction a human is moving.
+Sencing can be adjusted with definitions:
+"HYSTERES" The tolerance between block average temps before making an estimation if a human is present.
+"FLAG_LOOP_LIMIT" How many spins the loop can do when a flag has been raised on a block (humans precense).
+When the loop limit is passed the flag will be reseted. Sencing of a human on the other block will
+count up/down and also reset the flag.
+*/
 void TaskMovementMonitoring(void *pvParameters){ 
   (void) pvParameters;
 
@@ -292,7 +327,7 @@ void TaskMovementMonitoring(void *pvParameters){
     if (leftFlag || rightFlag) {
       loopsWithFlag += 1;
 
-      if (loopsWithFlag > flagLoopLimit) {
+      if (loopsWithFlag > FLAG_LOOP_LIMIT) {
       leftFlag = false;
       rightFlag = false;
       loopsWithFlag = 0;
@@ -301,7 +336,7 @@ void TaskMovementMonitoring(void *pvParameters){
 
     // check left block
     if (a>b) {
-      if(a-b > hysteres) {
+      if(a-b > HYSTERES) {
         if (rightFlag && inRoom != 0) { // protection against negative counting
           inRoom = inRoom - 1;
           rightFlag = false;
@@ -315,7 +350,7 @@ void TaskMovementMonitoring(void *pvParameters){
       }
         
     } else if ((b>a)) {    // check right block
-      if(b-a > hysteres) {
+      if(b-a > HYSTERES) {
         if (leftFlag) {
           inRoom = inRoom + 1;
           leftFlag = false;
@@ -441,7 +476,10 @@ void printTime(){
 }
 //------------------------------------------------------------------//
 
+
 //-----Mqtt & wifi functions------//
+
+// Connects to a WiFi network.
 void connectWifi() {
   delay(10);
   Serial.println();
@@ -451,16 +489,16 @@ void connectWifi() {
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+    delay(1000);
+    Serial.println("MQTT&WIFI: Trying to connect WiFi...");
   }
 
-  Serial.println("");
   Serial.println("MQTT&WIFI: WiFi connected");
   Serial.println("MQTT&WIFI: IP address: ");
   Serial.println(WiFi.localIP());
 }
 
+// Connects to a MQTT broker.
 void connectMqtt() {
   client.setServer(mqtt_server, mqttPort);
   // Loop until we're reconnected
