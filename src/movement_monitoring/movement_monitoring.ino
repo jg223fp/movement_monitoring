@@ -302,7 +302,7 @@ void TaskMovementMonitoring(void *pvParameters){
     // check left block
     if (a>b) {
       if(a-b > hysteres) {
-        if (rightFlag) {
+        if (rightFlag && inRoom != 0) { // protection against negative counting
           inRoom = inRoom - 1;
           rightFlag = false;
         } else {
