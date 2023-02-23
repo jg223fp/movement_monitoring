@@ -110,17 +110,16 @@ void setup() {
     ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
     );
 
-    xTaskCreatePinnedToCore(
-    TaskMqttWifi
-    ,  "Mqtt & wifi"
+  xTaskCreate(
+    TaskMovementMonitoring
+    ,  "Movement monitoring"
     ,  2048  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
-    ,  3  // Priority
+    ,  7  // Priority
     ,  NULL // With task handle we will be able to manipulate with this task.
-    ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
     );
 
-    xTaskCreatePinnedToCore(
+  xTaskCreatePinnedToCore(
     TaskLedIndication
     ,  "LED indication"
     ,  2048  // Stack size
@@ -130,15 +129,21 @@ void setup() {
     ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
     );
 
-    xTaskCreate(
-    TaskMovementMonitoring
-    ,  "Movement monitoring"
+  while (initActive) {
+    // wait for sniffer init to finisg before start publishing task
+  }
+  
+  xTaskCreatePinnedToCore(
+    TaskMqttWifi
+    ,  "Mqtt & wifi"
     ,  2048  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
-    ,  7  // Priority
+    ,  3  // Priority
     ,  NULL // With task handle we will be able to manipulate with this task.
+    ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
     );
 
+  
 }
 
 /*---------------------- Main loop ----------------------------------------------*/
@@ -225,6 +230,7 @@ This makes it possible to disconnect the wifi in between useage to save power.
 void TaskMqttWifi(void *pvParameters){ 
   (void) pvParameters;
   //---------SETUP-----------//
+
   connectWifi();
 
   //---------MAIN LOOP-----------//
