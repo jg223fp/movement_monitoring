@@ -24,7 +24,7 @@
 // Mqtt & wifi
 #define IO_USERNAME  "jg223fp"
 #define IO_KEY       "aio_pHcJ80PKSkjPHgfLR486iaNrdY6m"
-#define MQTT_PUBLISH_INTERVAL 10000 // Every x millisecond
+#define MQTT_PUBLISH_INTERVAL 5000 // Every x millisecond
 
 // Movement monitoring
 #define HYSTERES 0.5  // Higher gives less sensitivity, lower more noise   0.4 is best so far
@@ -224,7 +224,7 @@ Cloud service
 Connects to Wifi then connects to MQTT.
 When connections are succefful it publishes the data to the cloud.
 The publishing intervall can be toggled by the definition "MQTT_PUBLISH_INTERVAL".
-This makes it possible to disconnect the wifi in between useage to save power.
+This makes it possible to disconnect the wifi in between useage to save power if the disconnect line is uncommented.
 */
 void TaskMqttWifi(void *pvParameters){ 
   (void) pvParameters;
@@ -251,8 +251,8 @@ void TaskMqttWifi(void *pvParameters){
       client.publish(mqttTopicMacs, macString);
       client.publish(mqttTopicInRoom, inRoomString);
       Serial.println("MQTT&WIFI: Published macCount & inRoom");
-      delay(2000);        // Needed for packets to be sent
-      WiFi.disconnect();  // disconnect to save battery power
+      //delay(2000);        // Needed for packets to be sent
+      //WiFi.disconnect();  // Uncomment if need disconnect between publishes to save battery power
       delay(MQTT_PUBLISH_INTERVAL);
     }   
   }
