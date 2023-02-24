@@ -30,9 +30,6 @@ void setup() {
         while (1);
     }
     
-    Serial.println("-- Pixels Test --");
-
-    Serial.println();
 
     delay(100); // let sensor boot up
 
@@ -56,99 +53,64 @@ void loop() {
     // Read all the pixels
     amg.readPixels(pixels);
 
-    // Write all LEDS low
-    digitalWrite (26,LOW);
-    digitalWrite (25,LOW);
-
-    
-/*   // Code for printing all pixels
-    Serial.print("[");
-    //for(int i=1; i<=AMG88xx_PIXEL_ARRAY_SIZE; i++){
-    for(int i=1; i<=64; i++) {
-      Serial.print(pixels[i-1]);
-      Serial.print(", ");
-      if( i%8 == 0 ) Serial.println();
-    }
-    Serial.println("]");
-    Serial.println();
-    
-
-    //delay a second
-    //delay(15000);
-
-*/
-     // 16 pixels: the two rows in the middle on each side
+    // 16 pixels: the two rows in the middle on each side
     for (int i=2; i<=63; i=i+8) {
-      a = a + pixels[i];
+      //a = a + pixels[i];
       a = a + pixels[i+1];
       b = b + pixels[i+2];
-      b = b + pixels[i+3];
+      //b = b + pixels[i+3];
     }
 
     //obtain average value for each block
-      a = (a/16);
-      b = (b/16);
-
-/* // 64 pixels. 32 in each block
-// divide pixels into two blocks. 
-    for (int i=0; i<=63; i=i+8) {
-      for (int j = 0; j<4; j++) {
-        a = a + pixels[i+j];
-        b = b + pixels[i+j+4]; 
-      }
-    }
- 
-//obtain average value for each block
-      a = (a/32);
-      b = (b/32);
-
-  /*    Serial.print("a: ");
-      Serial.print(a);
-      Serial.print("    b: ");
-      Serial.print(b);
-      Serial.println();
-
-*/
+    a = (a/8);
+    b = (b/8);
 
 // check how many spins a flag has been raised. If nothing happens, reset the flags
     if (leftFlag || rightFlag) {
       loopsWithFlag += 1;
 
-      if (loopsWithFlag > flagLoopLimit) {
+      if (loopsWithFlag > FLAG_LOOP_LIMIT) {
       leftFlag = false;
       rightFlag = false;
       loopsWithFlag = 0;
       }
     }
 
-
     // check left block
     if (a>b) {
-      if(rightFlag) {
+      if(a-b > HYSTERES) {
+        if (rightFlag && inRoom != 0) { // protection against negative counting
           inRoom = inRoom - 1;
           rightFlag = false;
         } else {
-          if (a-b > hysteres) {
-          digitalWrite (26,HIGH);
+          //digitalWrite (GRN_LED, HIGH);   // LEDS are commented out in the movement sencing for permormance gain.
+          //digitalWrite (RED_LED, LOW);    // Uncomment them to look for background noice and sensor borders
           leftFlag = true;
-          }
-        }
-    } else if ((b>a)) {    // check right block
-      if(leftFlag) {
-        inRoom = inRoom + 1;
-        leftFlag = false;
+          } 
       } else {
-        if (b-a > hysteres) {
-        digitalWrite (25,HIGH);
-        rightFlag = true;
-        }
+          //digitalWrite (GRN_LED, LOW);
+      }
+        
+    } else if ((b>a)) {    // check right block
+      if(b-a > HYSTERES) {
+        if (leftFlag) {
+          inRoom = inRoom + 1;
+          leftFlag = false;
+        } else {
+        //  digitalWrite (RED_LED, HIGH);
+        //  digitalWrite (GRN_LED, LOW);
+          rightFlag = true;
+          } 
+      } else {
+         // digitalWrite (RED_LED, LOW);
       }
     }
 
+  // reset block sums
+    a = 0;
+    b = 0;
 
     Serial.println(inRoom);
-    a=0;
-    b=0;
 }
          
 
