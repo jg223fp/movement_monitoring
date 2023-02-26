@@ -5,6 +5,12 @@
 
 Adafruit_AMG88xx amg;
 
+
+#define HYSTERES 0.5  // Higher gives less sensitivity, lower more noise   0.4 is best so far
+#define FLAG_LOOP_LIMIT 200 // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
+#define RED_LED 25
+#define GRN_LED 26
+
 //float pixels[AMG88xx_PIXEL_ARRAY_SIZE];
 float pixels[64];
 
@@ -14,9 +20,11 @@ float b = 0;   // right block
 bool leftFlag = false;
 bool rightFlag = false;
 int loopsWithFlag = 0;   // Number of spins with a flag set. Counting variable. Can not be adjusted.
-float hysteres = 0.5;  // Higher gives less sensitivity, lower more noise   0.4 is best so far
-int flagLoopLimit = 15; // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
-int inRoom = 0;
+int inRoom = 1;
+
+// TEST
+int start = millis();
+int loopCount = 0;
 
 void setup() {
     Serial.begin(115200);
@@ -83,12 +91,12 @@ void loop() {
           inRoom = inRoom - 1;
           rightFlag = false;
         } else {
-          //digitalWrite (GRN_LED, HIGH);   // LEDS are commented out in the movement sencing for permormance gain.
-          //digitalWrite (RED_LED, LOW);    // Uncomment them to look for background noice and sensor borders
+          digitalWrite (GRN_LED, HIGH);   // LEDS are commented out in the movement sencing for permormance gain.
+          digitalWrite (RED_LED, LOW);    // Uncomment them to look for background noice and sensor borders
           leftFlag = true;
           } 
       } else {
-          //digitalWrite (GRN_LED, LOW);
+          digitalWrite (GRN_LED, LOW);
       }
         
     } else if ((b>a)) {    // check right block
@@ -97,12 +105,12 @@ void loop() {
           inRoom = inRoom + 1;
           leftFlag = false;
         } else {
-        //  digitalWrite (RED_LED, HIGH);
-        //  digitalWrite (GRN_LED, LOW);
+          digitalWrite (RED_LED, HIGH);
+          digitalWrite (GRN_LED, LOW);
           rightFlag = true;
           } 
       } else {
-         // digitalWrite (RED_LED, LOW);
+          digitalWrite (RED_LED, LOW);
       }
     }
 
@@ -110,7 +118,19 @@ void loop() {
     a = 0;
     b = 0;
 
-    Serial.println(inRoom);
+   Serial.println(inRoom);
+
+   // to get the  time of how long the flag_loop_limit takes to pass
+   // Right now: 1 loop takes 12.24 ms
+   /*
+    loopCount += 1;
+    if (loopCount > FLAG_LOOP_LIMIT) {
+      loopCount = 0;
+      int time = millis() - start;
+      Serial.println(time);
+      start = millis();
+    }
+    */
 }
          
 

@@ -28,8 +28,8 @@
 
 // Movement monitoring
 #define HYSTERES 0.5  // Higher gives less sensitivity, lower more noise   0.4 is best so far
-#define FLAG_LOOP_LIMIT 50 // How many spins the loop can go with a flag set, waiting for a human to enter the other block. // depends on human speed and microcontroller speed
-
+#define FLAG_LOOP_LIMIT 3 // How many spins the loop can go with a flag set, waiting for a human to enter the other block. // depends on human speed and microcontroller speed
+// 1 loop is 12.24 ms. Lower value counts up then counts down. Higher value will cause two persons walking close after each other to count up 1 then down 1.
 
 /*---------------------- Globals ----------------------------------------------*/
 //----------------------------------------------------------------------------//
@@ -99,13 +99,14 @@ void setup() {
   pinMode(RED_LED, OUTPUT);
   pinMode(GRN_LED, OUTPUT);
 
+
   //------Tasks setup-----------//
   xTaskCreatePinnedToCore(
     TaskSniffPackets
     ,  "PACKET SNIFFER"
     ,  2048  // Stack size
     ,  NULL  // When no parameter is used, simply pass NULL
-    ,  5  // Priority
+    ,  4  // Priority
     ,  NULL // With task handle we will be able to manipulate with this task.
     ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
     );
@@ -128,7 +129,8 @@ void setup() {
     ,  NULL // With task handle we will be able to manipulate with this task.
     ,  ARDUINO_RUNNING_CORE0 // Core on which the task will run
     );
-  
+
+
   while (initActive) {
   // wait for sniffer init to finisg before start publishing task
   delay(1000);
