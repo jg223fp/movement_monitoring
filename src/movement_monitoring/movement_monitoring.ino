@@ -17,7 +17,7 @@
 #define GRN_LED 26
 
 // Wifi packet sniffer
-#define initScanTimes 2 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
+#define initScanTimes 1 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
 #define maxCh 13 //max Channel EU = 13
 #define macLimit 128 // maximum number of macs that the controller can store
 
@@ -28,7 +28,7 @@
 
 // Movement monitoring
 #define HYSTERES 0.5  // Higher gives less sensitivity, lower more noise   0.4 is best so far
-#define FLAG_LOOP_LIMIT 3 // How many spins the loop can go with a flag set, waiting for a human to enter the other block. // depends on human speed and microcontroller speed
+#define FLAG_LOOP_LIMIT 200 // How many spins the loop can go with a flag set, waiting for a human to enter the other block. // depends on human speed and microcontroller speed
 // 1 loop is 12.24 ms. Lower value counts up then counts down. Higher value will cause two persons walking close after each other to count up 1 then down 1.
 
 /*---------------------- Globals ----------------------------------------------*/
@@ -80,6 +80,8 @@ bool leftFlag = false;
 bool rightFlag = false;
 int loopsWithFlag = 0;   // Number of spins with a flag set. Counting variable. Can not be adjusted.
 int inRoom = 1;  // number of people in the room from the begining. Should be zero but in test case I am in the room
+bool countedUp = false;
+bool countedDwn = false;
 
 // Tasks globals
 void TaskSniffPackets( void *pvParameters );
@@ -215,7 +217,7 @@ void TaskSniffPackets(void *pvParameters){
       Serial.println("PACKET SNIFFER: list index: " + String(listIndex));
     }
     checkTtl();   
-    Serial.println("PACKET SNIFFER: Number of active macs: " + String(macCount));
+    //Serial.println("PACKET SNIFFER: Number of active macs: " + String(macCount));
     curChannel++;
   }
 }
@@ -319,15 +321,15 @@ void TaskMovementMonitoring(void *pvParameters){
 
     // 16 pixels: the two rows in the middle on each side
     for (int i=2; i<=63; i=i+8) {
-      //a = a + pixels[i];
+      a = a + pixels[i];
       a = a + pixels[i+1];
       b = b + pixels[i+2];
-      //b = b + pixels[i+3];
+      b = b + pixels[i+3];
     }
 
     //obtain average value for each block
-    a = (a/8);
-    b = (b/8);
+    a = (a/16);
+    b = (b/16);
 
 // check how many spins a flag has been raised. If nothing happens, reset the flags
     if (leftFlag || rightFlag) {
@@ -342,9 +344,10 @@ void TaskMovementMonitoring(void *pvParameters){
 
     // check left block
     if (a>b) {
-      if(a-b > HYSTERES) {
+      if(a-b > HYSTERES && !countedDwn) {
         if (rightFlag && inRoom != 0) { // protection against negative counting
           inRoom = inRoom - 1;
+          countedDwn = true;
           rightFlag = false;
         } else {
           //digitalWrite (GRN_LED, HIGH);   // LEDS are commented out in the movement sencing for permormance gain.
@@ -356,9 +359,10 @@ void TaskMovementMonitoring(void *pvParameters){
       }
         
     } else if ((b>a)) {    // check right block
-      if(b-a > HYSTERES) {
+      if(b-a > HYSTERES && !countedUp) {
         if (leftFlag) {
           inRoom = inRoom + 1;
+          countedUp = true;
           leftFlag = false;
         } else {
         //  digitalWrite (RED_LED, HIGH);
@@ -369,6 +373,14 @@ void TaskMovementMonitoring(void *pvParameters){
          // digitalWrite (RED_LED, LOW);
       }
     }
+
+
+  // reset counting controll when zone is empty
+  if (a-b < HYSTERES && b-a < HYSTERES) {
+    countedDwn = false;
+    countedUp = false;
+  }
+  
 
   // reset block sums
     a = 0;
