@@ -1,0 +1,219 @@
+%----------------------------------------------------------------------------------------
+%
+% LaTeX-template for degree projects at LNU, Department of Computer Science
+% Last updated by Johan Hagelbäck, Oct 2015
+% Linnaeus University
+%
+% License: Creative Commons BY
+%
+%----------------------------------------------------------------------------------------
+
+%----------------------------------------------------------------------------------------
+%	Settings and configuration
+%----------------------------------------------------------------------------------------
+
+\documentclass[a4paper,12pt]{article}
+
+
+\usepackage{graphicx}
+%\usepackage{textcomp}
+\usepackage{caption}
+\usepackage{subcaption}
+%\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{booktabs} %for using tables in the section time plan
+\usepackage{tabularx} %for auto fitting the tables
+\usepackage{graphicx} %for table and booktabs
+\usepackage{mathrsfs}
+\usepackage{pdflscape}
+\usepackage{forest}
+\usepackage{pdfpages}
+\usepackage{adjustbox}
+\setcounter{tocdepth}{5}
+\forestset{
+  L1/.style={fill=green,},
+  L2/.style={fill=orange,edge={orange,line width=2pt}},
+  L3/.style={fill=yellow,edge={yellow,line width=2pt}},
+  L4/.style={fill=pink,edge={pink,line width=2pt}},
+  L5/.style={fill=pink!50,edge={pink,line width=2pt}},
+}
+\usepackage{xcolor}
+
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{longtable}
+%\usepackage{dtklogos}
+\usepackage{wallpaper}
+\usepackage[absolute]{textpos}
+\usepackage[top=2cm, bottom=2.5cm, left=3.5cm, right=3.5cm]{geometry}
+\usepackage{appendix}
+\usepackage{lscape}
+\usepackage[nottoc]{tocbibind}
+\usepackage[colorlinks=true,
+            linkcolor=black,
+            urlcolor=blue,
+            citecolor=black]{hyperref}
+\usepackage{xcolor,soul}
+\sethlcolor{cyan}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+\usepackage{sectsty}
+\sectionfont{\fontsize{14}{15}\selectfont}
+\subsectionfont{\fontsize{12}{15}\selectfont}
+\subsubsectionfont{\fontsize{12}{15}\selectfont}
+
+\usepackage{titlesec}
+
+\titleformat{\subparagraph}[runin]
+{\normalfont}
+{\thesubparagraph.}{0.5em}{\underline}
+
+\usepackage{csquotes} % Used to handle citations
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+
+\renewcommand{\thetable}{\arabic{section}.\arabic{table}}  
+\renewcommand{\thefigure}{\arabic{section}.\arabic{figure}} 
+
+%----------------------------------------------------------------------------------------
+%	
+%----------------------------------------------------------------------------------------
+\newsavebox{\mybox}
+\newlength{\mydepth}
+\newlength{\myheight}
+
+\newenvironment{sidebar}%
+{\begin{lrbox}{\mybox}\begin{minipage}{\textwidth}}%
+{\end{minipage}\end{lrbox}%
+ \settodepth{\mydepth}{\usebox{\mybox}}%
+ \settoheight{\myheight}{\usebox{\mybox}}%
+ \addtolength{\myheight}{\mydepth}%
+ \noindent\makebox[0pt]{\hspace{-20pt}\rule[-\mydepth]{1pt}{\myheight}}%
+ \usebox{\mybox}}
+
+%----------------------------------------------------------------------------------------
+%	Title section
+%----------------------------------------------------------------------------------------
+\newcommand\BackgroundPic{
+    \put(-2,-3){
+    \includegraphics[keepaspectratio,scale=0.3]{img/lnu_etch.png} % Background picture
+    }
+}
+\newcommand\BackgroundPicLogo{
+    \put(30,740){
+    \includegraphics[keepaspectratio,scale=0.10]{img/logo.png} % Logo in upper left corner
+    }
+    \put(150,780){
+    \includegraphics[keepaspectratio]{img/text.png} % Logo in upper left corner
+    }}
+
+\title{	
+\vspace{-8cm}
+\begin{sidebar}
+    \vspace{10cm}
+    \normalfont \normalsize
+    \Huge Project with Embedded System \\
+    \vspace{-1.3cm}
+\end{sidebar}
+\vspace{3cm}
+\begin{flushleft}
+    \huge Title of project
+\end{flushleft}
+\null
+\vfill
+\begin{textblock}{6}(10,13)
+\begin{flushright}
+\begin{minipage}{\textwidth}
+\begin{flushleft} \large
+\emph{Authors:} ****** \textsc{*****}\\
+\emph{Course Responsible:} Fredrik \textsc{Ahlgren}\\
+\emph{Supervisor:} **** \textsc{*****}\\
+\emph{Semester:} 23VT\\
+\emph{Course code:} 2DT304
+\end{flushleft}
+\end{minipage}
+\end{flushright}
+\end{textblock}
+}
+\author{}
+\date{} 
+
+\begin{document}
+\pagenumbering{gobble}
+\newgeometry{left=5cm}
+\AddToShipoutPicture*{\BackgroundPic}
+\AddToShipoutPicture*{\BackgroundPicLogo}
+\maketitle
+
+\clearpage
+%----------------------------------------------------------------------------------------
+%	Abstract
+%----------------------------------------------------------------------------------------
+\selectlanguage{english}
+\begin{abstract}
+
+...
+
+
+
+\bigskip
+
+\textbf{Keywords:} \emph{}
+
+
+
+\end{abstract}
+
+%----------------------------------------------------------------------------------------
+\newpage
+\pagenumbering{gobble}
+\tableofcontents % Table of contents
+\newpage
+\listoffigures
+\newpage
+\pagenumbering{arabic}
+
+%----------------------------------------------------------------------------------------
+%
+%	Here follows the actual text contents of the report.
+%
+%----------------------------------------------------------------------------------------
+
+%----------------------------------------------------------------------------------------
+%    Chapters
+%   Each chapter is a separate *.tex document
+%   Selective compilation of chapters by setting \includeonly on the top
+%----------------------------------------------------------------------------------------
+\include{introduction}
+\include{relatedwork}
+\include{Hardware}
+\include{software}
+\include{results}
+\include{conclusion}
+
+
+
+
+
+
+
+
+
+
+
+
+\newpage
+\hypersetup{urlcolor=black}
+\bibliographystyle{IEEEtran}
+\bibliography{referenser}
+\newpage
+\clearpage
+\setcounter{page}{1} % Starting on page 1 for attachments
+\input{appendix}
+
+\end{document}
