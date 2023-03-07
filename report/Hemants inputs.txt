@@ -1,0 +1,9 @@
+-block diagram
+-lägg till wifi i circuit diagram
+-skriv om batteri under hardware
+
+- result disussion is most important
+
+-skip security
+
+use images use diagrams use ghraphs.
