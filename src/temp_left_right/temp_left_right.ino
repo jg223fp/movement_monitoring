@@ -6,7 +6,7 @@
 Adafruit_AMG88xx amg;
 
 
-#define HYSTERES 0.5  // Higher gives less sensitivity, lower more noise   0.4 is best so far
+#define TEMP_DIFF 0.5  // Higher gives less sensitivity, lower more noise   0.4 is best so far
 #define FLAG_LOOP_LIMIT 200 // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
 #define RED_LED 25
 #define GRN_LED 26
@@ -20,7 +20,9 @@ float b = 0;   // right block
 bool leftFlag = false;
 bool rightFlag = false;
 int loopsWithFlag = 0;   // Number of spins with a flag set. Counting variable. Can not be adjusted.
-int inRoom = 1;
+int inRoom = 0;
+bool countedUp = false;
+bool countedDwn = false;
 
 // TEST
 int start = millis();
@@ -63,15 +65,15 @@ void loop() {
 
     // 16 pixels: the two rows in the middle on each side
     for (int i=2; i<=63; i=i+8) {
-      //a = a + pixels[i];
+      a = a + pixels[i];
       a = a + pixels[i+1];
       b = b + pixels[i+2];
-      //b = b + pixels[i+3];
+      b = b + pixels[i+3];
     }
 
     //obtain average value for each block
-    a = (a/8);
-    b = (b/8);
+    a = (a/16);
+    b = (b/16);
 
 // check how many spins a flag has been raised. If nothing happens, reset the flags
     if (leftFlag || rightFlag) {
@@ -84,11 +86,12 @@ void loop() {
       }
     }
 
-    // check left block
-    if (a>b) {
-      if(a-b > HYSTERES) {
+  // check left block
+    if (b>a) {
+      if(b-a > TEMP_DIFF && !countedDwn) {
         if (rightFlag && inRoom != 0) { // protection against negative counting
           inRoom = inRoom - 1;
+          countedDwn = true;
           rightFlag = false;
         } else {
           digitalWrite (GRN_LED, HIGH);   // LEDS are commented out in the movement sencing for permormance gain.
@@ -99,10 +102,11 @@ void loop() {
           digitalWrite (GRN_LED, LOW);
       }
         
-    } else if ((b>a)) {    // check right block
-      if(b-a > HYSTERES) {
+    } else if ((a>b)) {    // check right block
+      if(a-b > TEMP_DIFF && !countedUp) {
         if (leftFlag) {
           inRoom = inRoom + 1;
+          countedUp = true;
           leftFlag = false;
         } else {
           digitalWrite (RED_LED, HIGH);
@@ -114,13 +118,20 @@ void loop() {
       }
     }
 
-  // reset block sums
+
+    // reset counting controll when zone is empty
+    if (a-b < TEMP_DIFF && b-a < TEMP_DIFF) {
+      countedDwn = false;
+      countedUp = false;
+    }
+
+    // reset block sums
     a = 0;
     b = 0;
 
-   Serial.println(inRoom);
+    Serial.println(inRoom);
 
-   // to get the  time of how long the flag_loop_limit takes to pass
+   // uncomment this function to get the  time of how long the flag_loop_limit takes to pass
    // Right now: 1 loop takes 12.24 ms
    /*
     loopCount += 1;
