@@ -27,7 +27,7 @@
 #define MQTT_PUBLISH_INTERVAL 5000 // Every x millisecond
 
 // Movement monitoring
-#define HYSTERES 0.5  // Higher gives less sensitivity, lower more noise   0.4 is best so far
+#define TEMP_DIFF 0.5  // Higher gives less sensitivity, lower more noise   0.4 is best so far
 #define FLAG_LOOP_LIMIT 200 // How many spins the loop can go with a flag set, waiting for a human to enter the other block. // depends on human speed and microcontroller speed
 // 1 loop is 12.24 ms. Lower value counts up then counts down. Higher value will cause two persons walking close after each other to count up 1 then down 1.
 
@@ -296,7 +296,7 @@ Uses the 16 pixels in the middle and devides them into two block.
 Then looks at the difference in avergae temperature between the blocks and in what order the blocks 
 have a higher average temperature. By this it can tell in what direction a human is moving.
 Sencing can be adjusted with definitions:
-"HYSTERES" The tolerance between block average temps before making an estimation if a human is present.
+"TEMP_DIFF" The tolerance between block average temps before making an estimation if a human is present.
 "FLAG_LOOP_LIMIT" How many spins the loop can do when a flag has been raised on a block (humans precense).
 When the loop limit is passed the flag will be reseted. Sencing of a human on the other block will
 count up/down and also reset the flag.
@@ -343,8 +343,8 @@ void TaskMovementMonitoring(void *pvParameters){
     }
 
     // check left block
-    if (a>b) {
-      if(a-b > HYSTERES && !countedDwn) {
+    if (b>a) {
+      if(b-a > TEMP_DIFF && !countedDwn) {
         if (rightFlag && inRoom != 0) { // protection against negative counting
           inRoom = inRoom - 1;
           countedDwn = true;
@@ -358,8 +358,8 @@ void TaskMovementMonitoring(void *pvParameters){
           //digitalWrite (GRN_LED, LOW);
       }
         
-    } else if ((b>a)) {    // check right block
-      if(b-a > HYSTERES && !countedUp) {
+    } else if ((a>b)) {    // check right block
+      if(a-b > TEMP_DIFF && !countedUp) {
         if (leftFlag) {
           inRoom = inRoom + 1;
           countedUp = true;
@@ -376,7 +376,7 @@ void TaskMovementMonitoring(void *pvParameters){
 
 
   // reset counting controll when zone is empty
-  if (a-b < HYSTERES && b-a < HYSTERES) {
+  if (a-b < TEMP_DIFF && b-a < TEMP_DIFF) {
     countedDwn = false;
     countedUp = false;
   }
