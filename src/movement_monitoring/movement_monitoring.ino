@@ -13,7 +13,7 @@
 #define ARDUINO_RUNNING_CORE1 1
 
 // Pins
-#define RED_LED 25
+#define RED_LED 25 
 #define GRN_LED 26
 
 // Wifi packet sniffer
