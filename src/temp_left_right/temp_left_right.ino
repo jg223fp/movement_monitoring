@@ -6,7 +6,7 @@
 Adafruit_AMG88xx amg;
 
 
-#define TEMP_DIFF 0.5  // Higher gives less sensitivity, lower more noise   0.4 is best so far
+#define TEMP_DIFF 0.9  // Higher gives less sensitivity, lower more noise   0.4 is best so far
 #define FLAG_LOOP_LIMIT 200 // How many spins the loop can go with a flag set, waiting for a human to enter the other block. 10 with all 64 pixels and 16 pixels
 #define RED_LED 25
 #define GRN_LED 26

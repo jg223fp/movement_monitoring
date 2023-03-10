@@ -17,7 +17,7 @@
 #define GRN_LED 26
 
 // Wifi packet sniffer
-#define initScanTimes 1 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
+#define initScanTimes 6 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
 #define maxCh 13 //max Channel EU = 13
 #define macLimit 128 // maximum number of macs that the controller can store
 
@@ -27,7 +27,7 @@
 #define MQTT_PUBLISH_INTERVAL 5000 // Every x millisecond
 
 // Movement monitoring
-#define TEMP_DIFF 0.5  // Higher gives less sensitivity, lower more noise   0.4 is best so far
+#define TEMP_DIFF 0.9  // Higher gives less sensitivity, lower more noise   0.4 is best so far
 #define FLAG_LOOP_LIMIT 200 // How many spins the loop can go with a flag set, waiting for a human to enter the other block. // depends on human speed and microcontroller speed
 // 1 loop is 12.24 ms. Lower value counts up then counts down. Higher value will cause two persons walking close after each other to count up 1 then down 1.
 
