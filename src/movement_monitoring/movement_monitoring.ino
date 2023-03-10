@@ -17,9 +17,9 @@
 #define GRN_LED 26
 
 // Wifi packet sniffer
-#define initScanTimes 6 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
-#define maxCh 13 //max Channel EU = 13
-#define macLimit 128 // maximum number of macs that the controller can store
+#define INIT_SCAN_TIMES 6 // The number of times the initscan is looping through the number of channels. 1 second per channel. e.g. 2* 13 = 26 seconds initiation 
+#define MAX_CH 13 //max Channel EU = 13
+#define MAC_LIMIT 128 // maximum number of macs that the controller can store
 
 // Mqtt & wifi
 #define IO_USERNAME  "jg223fp"
@@ -35,7 +35,7 @@
 //----------------------------------------------------------------------------//
 
 // wifi packet sniffer globals
-String maclist[macLimit][2]; // list with collected macadresses [0]: macadress   [1]: TTL left
+String maclist[MAC_LIMIT][2]; // list with collected macadresses [0]: macadress   [1]: TTL left
 int listIndex = 0;  // variavble for knowing what index to put the new mac on in maclist
 int macCount = 0; // variable to keep track of active mac adresses in the list
 int curChannel = 1;  // current channel
@@ -186,8 +186,8 @@ void TaskSniffPackets(void *pvParameters){
   Serial.println("PACKET SNIFFER: Initiating, scanning for background mac addresses...");
   Serial.println("PACKET SNIFFER: Addressess found: ");
 
-  for (int i=0; i<(maxCh*initScanTimes); i++){
-    if (curChannel > maxCh){ 
+  for (int i=0; i<(MAX_CH*INIT_SCAN_TIMES); i++){
+    if (curChannel > MAX_CH){ 
       curChannel = 1;
     }
     esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
@@ -207,7 +207,7 @@ void TaskSniffPackets(void *pvParameters){
 //---------MAIN LOOP-----------//
   while (true){
     // loop through wifi channels
-    if(curChannel > maxCh){ 
+    if(curChannel > MAX_CH){ 
       curChannel = 1;
     }
     esp_wifi_set_channel(curChannel, WIFI_SECOND_CHAN_NONE);
@@ -443,7 +443,7 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
 
   } else if (!drop) { // this part runs during the standard sniffing
     // check if mac is already in array. if so reset TTL
-    for(int i=0;i<=macLimit;i++){ 
+    for(int i=0;i<=MAC_LIMIT;i++){ 
       if(mac == maclist[i][0]){
         maclist[i][1] = defaultTTL;
         inList = true;
@@ -454,7 +454,7 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
       maclist[listIndex][0] = mac;
       maclist[listIndex][1] = defaultTTL;
       listIndex ++;
-      if(listIndex >= macLimit) { 
+      if(listIndex >= MAC_LIMIT) { 
         Serial.println("PACKET SNIFFER: Too many addresses, reseting list index");
         listIndex = 0;
       }
@@ -465,7 +465,7 @@ void sniffer(void* buf, wifi_promiscuous_pkt_type_t type) {
 // check if TTL is over 0. if not, the mac is removed from the array
 void checkTtl(){ 
   int tempMacCount = 0;
-  for(int i=0;i<=macLimit;i++) {
+  for(int i=0;i<=MAC_LIMIT;i++) {
     if(!(maclist[i][0] == "")){
       tempMacCount ++;
       int ttl = (maclist[i][1].toInt());
@@ -486,7 +486,7 @@ void checkTtl(){
 // Prints the time left of the devices TTL
 void printTime(){ 
   Serial.println("PACKET SNIFFER: Active macadresses:");
-  for(int i=0;i<=macLimit;i++){
+  for(int i=0;i<=MAC_LIMIT;i++){
     if(!(maclist[i][0] == "")){ 
       Serial.println("PACKET SNIFFER: " + maclist[i][0] + "  timeleft: " + maclist[i][1]);      
     }
