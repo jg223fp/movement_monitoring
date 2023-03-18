@@ -1,5 +1,9 @@
 # movement_monitoring
-The idea for this project is to use an 8x8 IR thermal sensor for detection of people. The sensor has pixels just like a camera, but the 64 pixels are temperatures instead of colours. This hopefully gives the ability to calculate the direction of a humans movements and can there by keep track of how many enters and how many leaves a room with just one sensor and without using a camera.
+The idea for this project is to use an 8x8 IR thermal sensor for detection of people. The sensor has pixels just like a camera, but the 64 pixels are temperatures instead of colours. This hopefully gives the ability to calculate the direction of a humans movements and keep track of how many enters and how many leaves a room with just one sensor and without using a camera.
+
+## Youtube link
+- https://youtu.be/HnOBl7KIWlc
+
 
 ## Requirements
 - Detect the presence of a heatsource(human).
@@ -10,15 +14,6 @@ The idea for this project is to use an 8x8 IR thermal sensor for detection of pe
 
 <br><br>
 
-## Software components
-- Cmake 3.25.2
-- arm-gnu-toolchain-12.2
-- winlibs personal build version gcc-12.2.0-llvm-15.0.7-mingw-w64ucrt-10.0.0-r4
-- FreeRTOS-Kernel
-- pico-sdk
-
-
-<br><br>
 
 ## Hardware components
 - Raspberry pi pico w
@@ -29,21 +24,8 @@ The idea for this project is to use an 8x8 IR thermal sensor for detection of pe
 
 <br><br>
 
-## Scenario
-Technique used for monitoring visitor flows is wanted for various areas. This projects uses a classroom as a scenario.
 
-
-## Todos
-
-- Add images to readme
-- Add delays betwwen tasks during boot
-- Add blink with leds for erros
-- Change init for sniffer to 2 instead of 0
-- Add protection for movement miontoring so it cant be -1 in the count
-- create printout task that prints the statuses instead of mqtt wifi task doing it.
-- create something that printsout the actual cores and tasks
-
-## LoPy
+## LoPy notes
 1. While pins G23 and GND are shorted, reset the LoPy.
 
 2. Upload the code from the Arduino IDE.
@@ -59,3 +41,4 @@ Technique used for monitoring visitor flows is wanted for various areas. This pr
 - every mac gets a ttl of 60 seconds
 - if ttl passes the mac is removed from the list
 - every time the mac is found the ttl is reset to 60
+- future improvement: add RSSI controll to remove packets with weak signals
